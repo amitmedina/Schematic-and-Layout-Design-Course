@@ -23,4 +23,27 @@
     (Folder "Include Files"
       (Sort User)))
   (DefaultLibraryBrowseDirectory "library\PSpice")
-  (Folder "Logs"))
+  (Folder "Logs")
+  (PartMRUSelector)
+  (MPSSessionName "Amit.M")
+  (GlobalState
+    (FileView
+      (Path "Design Resources")
+      (Select "Design Resources"))
+    (HierarchyView)
+    (Doc
+      (Type "COrCapturePMDoc")
+      (Frame
+        (Placement "44 0 1 -1 -1 -1 -1 0 200 0 478"))
+      (Tab 0))
+    (Doc
+      (Type "COrSchematicDoc")
+      (Frame
+        (Placement "44 2 3 -1 -1 5 24 5 1131 24 290")
+        (Scroll "-62 0")
+        (Zoom "100")
+        (Occurrence "/"))
+      (Path
+         "M:\AMIT MEDINA\SCHEMATIC AND LAYOUT DESIGN COURSE\SCHEMATIC-AND-LAYOUT-DESIGN-COURSE-REPO\TRAINING\TRAINING.DSN")
+      (Schematic "SCHEMATIC1")
+      (Page "PAGE1"))))
