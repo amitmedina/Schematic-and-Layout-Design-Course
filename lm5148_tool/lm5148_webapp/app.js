@@ -12,7 +12,8 @@ const DEFAULTS = {
   lUsed: 0.56e-6,
 
   // Eq33 helper
-  rsForEq33: 5e-3,
+  // UI: mΩ
+  rsForEq33: 5,
 
   // Current sense
   vcsTh: 0.060,
@@ -111,7 +112,15 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { ...DEFAULTS };
     const obj = JSON.parse(raw);
-    return { ...DEFAULTS, ...obj };
+    const st = { ...DEFAULTS, ...obj };
+
+    // Backward-compatible migration:
+    // Older versions stored rsForEq33 in Ω (e.g., 0.005). New UI expects mΩ (e.g., 5).
+    if (typeof st.rsForEq33 === 'number' && Number.isFinite(st.rsForEq33) && st.rsForEq33 > 0 && st.rsForEq33 < 0.2) {
+      st.rsForEq33 = st.rsForEq33 * 1000;
+    }
+
+    return st;
   } catch {
     return { ...DEFAULTS };
   }
@@ -156,8 +165,13 @@ function eq32_ilPk(iout, deltaIlMax) {
   return iout + deltaIlMax / 2;
 }
 
-function eq33_rosc(vout, rs, L, fsw) {
-  return (vout * rs) / (L * fsw);
+function eq33_lo_sc(vout, rs_mOhm, fsw) {
+  // Datasheet Eq. 33: L_O(sc) = (VOUT * RS) / ((24 mV) * FSW)
+  // This matches the datasheet numeric example (~0.5 µH for 5V, 5mΩ, 2.1MHz).
+  // UI expects RS in mΩ; convert to Ω here.
+  const rs_ohm = rs_mOhm * 1e-3;
+  const slope_v = 24e-3;
+  return (vout * rs_ohm) / (slope_v * fsw);
 }
 
 function eq34_rsense(vcsTh, margin, ilPk) {
@@ -237,8 +251,8 @@ function recalc() {
   const ilPkMax = eq32_ilPk(st.iout, dIlMax);
   setEng('ilPkMax', ilPkMax, 'A');
 
-  const rosc = eq33_rosc(st.vout, st.rsForEq33, st.lUsed, st.fsw);
-  setText('rosc', fmt(rosc));
+  const loSc = eq33_lo_sc(st.vout, st.rsForEq33, st.fsw);
+  setEng('rosc', loSc, 'H');
 
   const rsense = eq34_rsense(st.vcsTh, st.ilPkMargin, ilPkMax);
   setEng('rsense', rsense, 'Ω');
@@ -282,7 +296,9 @@ function recalc() {
     lReq_H: Lreq,
     deltaIlMax_A: dIlMax,
     ilPkMax_A: ilPkMax,
-    rosc: rosc,
+    lo_sc_H: loSc,
+    // Backward-compat alias (older exports used the key "rosc")
+    rosc: loSc,
     rsense_Ohm: rsense,
     ilPkSc_A: ilPkSc,
     coutMin_F: coutMin,

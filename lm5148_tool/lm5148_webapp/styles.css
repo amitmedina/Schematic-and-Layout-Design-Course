@@ -111,6 +111,39 @@ h3 {
   font-size: 12px;
 }
 
+.help {
+  margin-top: 6px;
+  border: 1px solid rgba(148,163,184,0.18);
+  background: rgba(11,18,32,0.35);
+  border-radius: 12px;
+  padding: 8px 10px;
+  color: rgba(226, 232, 240, 0.92);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.help summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+  list-style: none;
+}
+
+.help summary::-webkit-details-marker {
+  display: none;
+}
+
+.help summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 8px;
+  transform: translateY(-1px);
+}
+
+.help[open] summary::before {
+  content: '▾';
+}
+
 input {
   width: 100%;
   padding: 10px 10px;

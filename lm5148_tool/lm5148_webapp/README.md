@@ -31,6 +31,32 @@ Option C (no extensions):
 
 	`& "m:/Amit Medina/Schematic and Layout Design Course/.venv/Scripts/python.exe" "m:/Amit Medina/Schematic and Layout Design Course/Schematic-and-Layout-Design-Course-repo/lm5148_tool/populate_quickstart_calculator.py" --json "m:/Amit Medina/Schematic and Layout Design Course/Schematic-and-Layout-Design-Course-repo/lm5148_tool/lm5148_design.json" --out "m:/Amit Medina/Schematic and Layout Design Course/Schematic-and-Layout-Design-Course-repo/lm5148_tool/LM5148_quickstart_filled_v2.xlsm" --out-xlsx "m:/Amit Medina/Schematic and Layout Design Course/Schematic-and-Layout-Design-Course-repo/lm5148_tool/LM5148_quickstart_filled_v2.xlsx"`
 
+## One-place Python app (Streamlit)
+
+If you prefer to have **calculations + exports** in one place (instead of a static web page + separate scripts), run the Streamlit app:
+
+- Install deps (from `lm5148_tool/`): `pip install -r requirements.txt`
+- Run: `streamlit run lm5148_streamlit_app.py`
+
+It supports:
+- Download `lm5148_design.json`
+- Download a standalone `lm5148_results.xlsx`
+- Build and download filled TI quickstart outputs:
+	- `.xlsm` (macro-enabled, preserves shapes/macros)
+	- `.xlsx`
+
+Note: the `.xlsm` export path requires **Windows + Microsoft Excel** and the `pywin32` package.
+
+Install the optional Excel automation deps with:
+
+`pip install -r lm5148_tool/requirements-excel-automation.txt`
+
+## Python COM exporter (no PowerShell)
+
+If you want the best-fidelity `.xlsm` export but prefer Python over PowerShell, use:
+
+`python lm5148_tool/quickstart_excel_com.py --json lm5148_tool/lm5148_design.json --template training/LM5148_LM25148_quickstart_calculator_A4.xlsm --out-xlsm lm5148_tool/LM5148_quickstart_filled_excel.xlsm --out-xlsx lm5148_tool/LM5148_quickstart_filled_excel.xlsx`
+
 ## Publish (GitHub Pages)
 
 If you want to open the calculator from your phone (or anywhere), publish it via **GitHub Pages**:

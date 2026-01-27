@@ -47,26 +47,70 @@
         <label class="field">
           <span>VIN (min) [V]</span>
           <input type="number" step="0.01" id="vinMin" />
+          <details class="help">
+            <summary>What is this?</summary>
+            <div>
+              Minimum input voltage the converter must regulate at. This is the worst-case low line condition.
+              It matters for duty cycle and for ensuring the design still meets current limit, on-time/off-time,
+              and thermal limits at the lowest VIN.
+            </div>
+          </details>
         </label>
         <label class="field">
           <span>VIN (nom) [V]</span>
           <input type="number" step="0.01" id="vinNom" />
+          <details class="help">
+            <summary>What is this?</summary>
+            <div>
+              Typical/nominal input voltage used for “center” calculations (for example the inductor sizing step).
+              Use the value your system spends most of its time at.
+            </div>
+          </details>
         </label>
         <label class="field">
           <span>VIN (max) [V]</span>
           <input type="number" step="0.01" id="vinMax" />
+          <details class="help">
+            <summary>What is this?</summary>
+            <div>
+              Maximum input voltage (high line). Used for worst-case ripple and peak inductor current,
+              and for worst-case short-circuit peak current (because higher VIN increases current slew rate through L).
+            </div>
+          </details>
         </label>
         <label class="field">
           <span>VOUT [V]</span>
           <input type="number" step="0.001" id="vout" />
+          <details class="help">
+            <summary>What is this?</summary>
+            <div>
+              Regulated output voltage target. This affects duty cycle, inductor volt-seconds, output ripple, and
+              the feedback divider (RTOP/RBOT).
+            </div>
+          </details>
         </label>
         <label class="field">
           <span>IOUT [A]</span>
           <input type="number" step="0.01" id="iout" />
+          <details class="help">
+            <summary>What is this?</summary>
+            <div>
+              Maximum continuous load current you want the regulator to support.
+              Many equations use IOUT along with the chosen ripple fraction to determine ripple current and peak current.
+            </div>
+          </details>
         </label>
         <label class="field">
           <span>FSW [Hz]</span>
           <input type="number" step="1" id="fsw" />
+          <details class="help">
+            <summary>What is this?</summary>
+            <div>
+              Switching frequency (PWM frequency). Higher FSW generally allows smaller L and C for the same ripple,
+              but increases switching losses/EMI. In the datasheet design flow, FSW appears in the inductor, ripple,
+              input capacitor, and compensation calculations.
+            </div>
+          </details>
         </label>
       </div>
     </section>
@@ -92,6 +136,15 @@
             <label class="field">
               <span>Ripple fraction ΔIL/IOUT</span>
               <input type="number" step="0.01" id="rippleFrac" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  This is how much inductor ripple current you allow relative to the DC load current.
+                  Example: 0.30 means design for about 30% ripple at VIN nominal.
+                  Larger ripple → smaller inductance, higher peak current and output ripple.
+                  Smaller ripple → larger inductance, lower peak current but physically larger inductor.
+                </div>
+              </details>
             </label>
             <label class="field">
               <span>ΔIL [A] (auto)</span>
@@ -126,6 +179,14 @@
             <label class="field">
               <span>L used [H]</span>
               <input type="number" step="1e-9" id="lUsed" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  The actual inductance value you plan to use (a real part value).
+                  The tool uses this to recompute ripple and peak current at VIN(max) and to size other parts
+                  (sense resistor, short-circuit peak current, output cap energy step, etc.).
+                </div>
+              </details>
             </label>
             <div class="result">
               <div class="k">ΔIL @ VIN(max)</div>
@@ -149,17 +210,30 @@
           <div class="equation">
             <div class="eqTag">(33)</div>
             \[
-              R_{O(sc)} = \frac{V_{OUT}R_S}{L\,F_{SW}}
+              L_{O(sc)} = \frac{V_{OUT}R_S}{(24\,\mathrm{mV})\,F_{SW}}
             \]
           </div>
 
           <div class="inputs">
             <label class="field">
-              <span>RS [Ω]</span>
+              <span>RS [mΩ]</span>
               <input type="number" step="1e-6" id="rsForEq33" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  Current-sense shunt resistor used by the LM5148 current-limit comparator.
+                  In the design flow, RS is chosen from the current-limit threshold (VCS-TH) and the desired peak current.
+                  This helper uses RS in the datasheet’s Eq. 33 expression.
+                </div>
+                <div style="margin-top:8px;">
+                  Units:
+                  - Enter RS in milliohms (mΩ). Example: a 5 mΩ shunt → enter <b>5</b>.
+                  - The result is an inductance, typically shown in µH.
+                </div>
+              </details>
             </label>
             <div class="result">
-              <div class="k">RO(sc)</div>
+              <div class="k">LO(sc)</div>
               <div class="v"><span id="rosc"></span></div>
             </div>
           </div>
@@ -188,10 +262,36 @@
             <label class="field">
               <span>VCS-TH [V]</span>
               <input type="number" step="0.001" id="vcsTh" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  LM5148 “current limit threshold” for the current-sense comparator.
+                  The datasheet specifies this threshold measured from ISNS+ to VOUT. When the sensed voltage
+                  (through the shunt resistor RS) exceeds this threshold, the controller terminates the high-side gate
+                  drive for cycle-by-cycle current limiting.
+                </div>
+                <div style="margin-top:8px;">
+                  How it’s used here:
+                  - Sets RS via Eq. 34: $R_S = \frac{V_{CS\text{-}TH}}{m\,I_{L,pk}}$
+                  - Affects short-circuit peak current estimate (Eq. 35) together with propagation delay.
+                </div>
+                <div style="margin-top:8px;">
+                  Typical value: the datasheet lists ~60 mV typical (with min/max limits). If you want margin, you can
+                  use min/typ/max depending on your risk preference.
+                </div>
+              </details>
             </label>
             <label class="field">
               <span>Margin m</span>
               <input type="number" step="0.01" id="ilPkMargin" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  A design margin factor between the calculated peak inductor current and the current limit setpoint.
+                  The datasheet design flow uses a value around 1.25 (25% margin) as a typical choice.
+                  Larger m → smaller RS (higher allowed peak before current limit), but increases stress/overcurrent threshold.
+                </div>
+              </details>
             </label>
             <div class="result">
               <div class="k">RS</div>
@@ -219,6 +319,24 @@
             <label class="field">
               <span>tDELAY [s]</span>
               <input type="number" step="1e-9" id="tDelay" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  Propagation delay from the current-sense signal to the point where the controller actually turns off the
+                  high-side switch. The datasheet describes this as the CS-to-output delay (comparator + internal logic +
+                  gate driver delay). During this delay, inductor current keeps rising, so the true peak current can exceed
+                  the ideal $V_{CS\text{-}TH}/R_S$ limit.
+                </div>
+                <div style="margin-top:8px;">
+                  How it’s used here:
+                  - Eq. 35 adds $V_{IN,max}\,t_{delay}/L$ to estimate worst-case peak current under a short.
+                </div>
+                <div style="margin-top:8px;">
+                  Notes:
+                  - Use the datasheet’s typical/maximum guidance for your design corner.
+                  - This input is usually tens of nanoseconds.
+                </div>
+              </details>
             </label>
             <div class="result">
               <div class="k">IL,pk(sc)</div>
@@ -250,6 +368,19 @@
             <label class="field">
               <span>ΔV overshoot [V]</span>
               <input type="number" step="0.001" id="voutOvershoot" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  Allowed output-voltage overshoot during a fast load step where load current suddenly decreases ("load-off").
+                  The inductor current cannot change instantly, so energy stored in the inductor is pushed into the output capacitor.
+                  This parameter is the maximum extra voltage you allow above VOUT during that event.
+                </div>
+                <div style="margin-top:8px;">
+                  Trade-off:
+                  - Smaller allowed overshoot → requires more output capacitance.
+                  - Larger allowed overshoot → allows smaller capacitance but increases stress on the load / VOUT tolerance.
+                </div>
+              </details>
             </label>
             <div class="result">
               <div class="k">Cout (min)</div>
@@ -276,10 +407,35 @@
             <label class="field">
               <span>Cout,eff [F]</span>
               <input type="number" step="1e-6" id="coutEff" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  Effective output capacitance used for ripple calculations. For ceramic capacitors, the actual capacitance can be
+                  significantly lower than the nameplate value due to DC bias, temperature, and tolerance.
+                  Use a <i>derated</i> value that matches your capacitor technology and operating conditions.
+                </div>
+                <div style="margin-top:8px;">
+                  How it’s used:
+                  - Eq. 37 uses COUT,eff for the capacitive ripple term $\Delta I_L/(8F_{SW}C_{OUT,eff})$.
+                  - Eq. 43 uses it again for loop-compensation sizing.
+                </div>
+              </details>
             </label>
             <label class="field">
               <span>RESR [Ω]</span>
               <input type="number" step="1e-6" id="routEsr" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  Equivalent Series Resistance (ESR) of the output capacitor bank at the ripple frequency.
+                  Output ripple has two contributors: (1) capacitive ripple and (2) ESR ripple. Eq. 37 combines them via RSS.
+                </div>
+                <div style="margin-top:8px;">
+                  Notes:
+                  - Ceramics usually have very low ESR; polymer/electrolytics higher.
+                  - If you use multiple caps in parallel, ESR reduces roughly with parallel count.
+                </div>
+              </details>
             </label>
             <div class="result">
               <div class="k">ΔVout,pp</div>
@@ -326,6 +482,17 @@
             <label class="field">
               <span>D (duty)</span>
               <input type="number" step="0.01" id="duty" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  Duty cycle estimate for the buck stage. For an ideal buck, $D \approx V_{OUT}/V_{IN}$.
+                  Input-capacitor RMS current tends to be worst around $D\approx 0.5$ (50%), which is why the datasheet
+                  often suggests checking that condition.
+                </div>
+                <div style="margin-top:8px;">
+                  Tip: If you don’t want to think about it, use 0.5 as a conservative starting point for Cin RMS.
+                </div>
+              </details>
             </label>
             <div class="result">
               <div class="k">Icin,rms</div>
@@ -356,10 +523,29 @@
             <label class="field">
               <span>ΔVIN,pp spec [V]</span>
               <input type="number" step="0.001" id="vinRippleSpec" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  The maximum allowed peak-to-peak ripple on VIN at the regulator input.
+                  This is usually set by upstream supply tolerance, EMI targets, and ensuring the controller sees a clean input.
+                  Eq. 40 uses this spec to back-calculate how much input capacitance is required.
+                </div>
+              </details>
             </label>
             <label class="field">
               <span>RESR [Ω]</span>
               <input type="number" step="1e-6" id="rinEsr" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  ESR of the input capacitor bank. Even if capacitance is large, ESR can dominate ripple.
+                  In Eq. 40 the ESR ripple term is $\Delta V_{IN,ESR} \approx I_{CIN,rms}R_{ESR}$.
+                </div>
+                <div style="margin-top:8px;">
+                  If the ESR term alone exceeds your ripple spec, adding more capacitance won’t help—
+                  you need lower-ESR capacitors and/or more parallel parts.
+                </div>
+              </details>
             </label>
             <div class="result">
               <div class="k">Cin required</div>
@@ -415,10 +601,25 @@
             <label class="field">
               <span>VREF [V]</span>
               <input type="number" step="0.001" id="vref" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  The internal reference voltage used by the LM5148 feedback loop.
+                  The feedback divider scales VOUT down to match VREF at regulation.
+                </div>
+              </details>
             </label>
             <label class="field">
               <span>RBOT [Ω]</span>
               <input type="number" step="1" id="rfbBot" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  Bottom resistor of the feedback divider (from FB node to GND).
+                  You typically choose RBOT first (common values 10 kΩ–100 kΩ), then compute RTOP.
+                  Higher resistance reduces divider current (slightly better efficiency) but can be more noise-sensitive.
+                </div>
+              </details>
             </label>
             <div class="result">
               <div class="k">RTOP</div>
@@ -449,10 +650,26 @@
             <label class="field">
               <span>fC [Hz]</span>
               <input type="number" step="100" id="fc" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  Target control-loop crossover frequency used for compensation sizing.
+                  In general, higher fC can improve transient response but reduces phase margin if pushed too high.
+                  The datasheet’s flow uses fC in Eq. 43 and Eq. 44.
+                </div>
+              </details>
             </label>
             <label class="field">
               <span>Gm [S]</span>
               <input type="number" step="1e-6" id="gm" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  Transconductance (gm) of the internal error amplifier used in the compensation equations.
+                  Units are Siemens (A/V). The datasheet provides typical values.
+                  Eq. 43 scales RCOMP based on gm.
+                </div>
+              </details>
             </label>
             <div class="result">
               <div class="k">RCOMP</div>
@@ -499,10 +716,25 @@
             <label class="field">
               <span>fESR [Hz]</span>
               <input type="number" step="1000" id="fesr" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  Frequency associated with the output-capacitor ESR zero.
+                  Many compensation designs place a capacitor (CHF) to shape high-frequency gain around this ESR zero.
+                  Use a realistic value based on your capacitor bank.
+                </div>
+              </details>
             </label>
             <label class="field">
               <span>Cbw [F]</span>
               <input type="number" step="1e-13" id="cbw" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  A small capacitance term used in the datasheet equation (often representing parasitics / bandwidth-related capacitance
+                  in the COMP/FB network). It is subtracted in Eq. 45.
+                </div>
+              </details>
             </label>
             <div class="result">
               <div class="k">CHF</div>

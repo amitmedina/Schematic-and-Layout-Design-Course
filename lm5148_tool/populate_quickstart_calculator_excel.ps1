@@ -2,11 +2,11 @@ param(
   [Parameter(Mandatory=$true)]
   [string]$JsonPath,
 
-  [Parameter(Mandatory=$true)]
-  [string]$TemplatePath,
+  [Parameter(Mandatory=$false)]
+  [string]$TemplatePath = "",
 
-  [Parameter(Mandatory=$true)]
-  [string]$OutXlsm,
+  [Parameter(Mandatory=$false)]
+  [string]$OutXlsm = "",
 
   [Parameter(Mandatory=$false)]
   [string]$OutXlsx = "",
@@ -26,8 +26,25 @@ function Ensure-ParentDir([string]$Path) {
 if (-not (Test-Path -LiteralPath $JsonPath)) {
   throw "JSON not found: $JsonPath"
 }
+
+# The file starting with "~$" is an Excel temp/lock file.
+# Do not use it as input; use the real .xlsm template.
+
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$repoRoot = Split-Path -Parent $scriptDir
+
+if (-not $TemplatePath) {
+  $TemplatePath = Join-Path $repoRoot "training\LM5148_LM25148_quickstart_calculator_A4.xlsm"
+}
 if (-not (Test-Path -LiteralPath $TemplatePath)) {
   throw "Template not found: $TemplatePath"
+}
+
+if (-not $OutXlsm) {
+  $OutXlsm = Join-Path $scriptDir "LM5148_quickstart_filled_excel.xlsm"
+}
+if (-not $OutXlsx) {
+  $OutXlsx = Join-Path $scriptDir "LM5148_quickstart_filled_excel.xlsx"
 }
 
 $payload = Get-Content -LiteralPath $JsonPath -Raw | ConvertFrom-Json
