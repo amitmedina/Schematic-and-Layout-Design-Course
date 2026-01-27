@@ -1,0 +1,19 @@
+# OS / editor
+Thumbs.db
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.venv*/
+
+# Office temp/lock files
+~$*.xlsx
+~$*.xlsm
+
+# If you want to keep generated deliverables, remove these ignores.
+# Generated LM5148 deliverables (optional)
+# lm5148_tool/LM5148_quickstart_filled*.xls*
+# lm5148_tool/lm5148_design_export.xlsx
+# lm5148_tool/lm5148_equations_images*/

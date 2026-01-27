@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LM5148 Design Steps (Pages 36–39)</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- MathJax for equation rendering (client-side) -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']],
+      },
+      options: {
+        renderActions: {
+          addMenu: [],
+        },
+      },
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <h1>LM5148 Design Calculator (based on datasheet pages 36–39)</h1>
+      <p class="subtle">
+        This app mirrors the datasheet flow and equation numbering (31–45). Steps are paraphrased for convenience.
+      </p>
+      <div class="toolbar">
+        <button id="btnReset" class="btn">Reset to defaults</button>
+        <button id="btnCopy" class="btn btnSecondary">Copy results as JSON</button>
+        <button id="btnDownload" class="btn btnSecondary">Download JSON</button>
+      </div>
+      <div id="status" class="status" aria-live="polite"></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Global Inputs</h2>
+      <div class="grid">
+        <label class="field">
+          <span>VIN (min) [V]</span>
+          <input type="number" step="0.01" id="vinMin" />
+        </label>
+        <label class="field">
+          <span>VIN (nom) [V]</span>
+          <input type="number" step="0.01" id="vinNom" />
+        </label>
+        <label class="field">
+          <span>VIN (max) [V]</span>
+          <input type="number" step="0.01" id="vinMax" />
+        </label>
+        <label class="field">
+          <span>VOUT [V]</span>
+          <input type="number" step="0.001" id="vout" />
+        </label>
+        <label class="field">
+          <span>IOUT [A]</span>
+          <input type="number" step="0.01" id="iout" />
+        </label>
+        <label class="field">
+          <span>FSW [Hz]</span>
+          <input type="number" step="1" id="fsw" />
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>9.2.1.2.3 Buck Inductor</h2>
+
+      <div class="step">
+        <div class="stepHeader">
+          <h3>Step 1 — Pick ripple current and compute inductance (Eq. 31)</h3>
+          <p class="subtle">Choose a target ripple fraction (typ. ~30% of IOUT at VIN nominal).</p>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(31)</div>
+            \[
+              L = \frac{V_{OUT}(V_{IN,nom}-V_{OUT})}{V_{IN,nom}\,F_{SW}\,\Delta I_L}
+            \]
+          </div>
+
+          <div class="inputs">
+            <label class="field">
+              <span>Ripple fraction ΔIL/IOUT</span>
+              <input type="number" step="0.01" id="rippleFrac" />
+            </label>
+            <label class="field">
+              <span>ΔIL [A] (auto)</span>
+              <input type="number" step="0.001" id="deltaIlNom" disabled />
+            </label>
+            <div class="result">
+              <div class="k">L required</div>
+              <div class="v"><span id="lReq"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="note">Tip: You can choose a standard L value and re-check ripple/peaks below.</div>
+      </div>
+
+      <div class="step">
+        <div class="stepHeader">
+          <h3>Step 2 — Use chosen L to compute peak current at VIN(max) (Eq. 32)</h3>
+          <p class="subtle">This estimates ripple at VIN(max) and the peak inductor current.</p>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(32)</div>
+            \[
+              \Delta I_L = \frac{V_{OUT}(V_{IN,max}-V_{OUT})}{V_{IN,max}\,L\,F_{SW}},\quad
+              I_{L,pk} = I_{OUT} + \frac{\Delta I_L}{2}
+            \]
+          </div>
+
+          <div class="inputs">
+            <label class="field">
+              <span>L used [H]</span>
+              <input type="number" step="1e-9" id="lUsed" />
+            </label>
+            <div class="result">
+              <div class="k">ΔIL @ VIN(max)</div>
+              <div class="v"><span id="deltaIlMax"></span></div>
+            </div>
+            <div class="result">
+              <div class="k">IL,pk @ VIN(max)</div>
+              <div class="v"><span id="ilPkMax"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepHeader">
+          <h3>Step 3 — Cross-check slope compensation (Eq. 33)</h3>
+          <p class="subtle">Shown here as a helper expression (same equation used in the Word export).</p>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(33)</div>
+            \[
+              R_{O(sc)} = \frac{V_{OUT}R_S}{L\,F_{SW}}
+            \]
+          </div>
+
+          <div class="inputs">
+            <label class="field">
+              <span>RS [Ω]</span>
+              <input type="number" step="1e-6" id="rsForEq33" />
+            </label>
+            <div class="result">
+              <div class="k">RO(sc)</div>
+              <div class="v"><span id="rosc"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>9.2.1.2.4 Current-Sense Resistance</h2>
+
+      <div class="step">
+        <div class="stepHeader">
+          <h3>Step 1 — Compute current-sense resistor (Eq. 34)</h3>
+          <p class="subtle">Use a peak-current margin above IL,pk (commonly ~25%).</p>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(34)</div>
+            \[
+              R_S = \frac{V_{CS,TH}}{m\,I_{L,pk}}\quad (m\approx1.25)
+            \]
+          </div>
+
+          <div class="inputs">
+            <label class="field">
+              <span>VCS-TH [V]</span>
+              <input type="number" step="0.001" id="vcsTh" />
+            </label>
+            <label class="field">
+              <span>Margin m</span>
+              <input type="number" step="0.01" id="ilPkMargin" />
+            </label>
+            <div class="result">
+              <div class="k">RS</div>
+              <div class="v"><span id="rsense"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepHeader">
+          <h3>Step 2 — Worst-case short-circuit peak current (Eq. 35)</h3>
+          <p class="subtle">Uses propagation delay and inductance to estimate peak under short.</p>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(35)</div>
+            \[
+              I_{L,pk(sc)} = \frac{V_{CS,TH}}{R_S} + \frac{V_{IN,max}\,t_{delay}}{L}
+            \]
+          </div>
+
+          <div class="inputs">
+            <label class="field">
+              <span>tDELAY [s]</span>
+              <input type="number" step="1e-9" id="tDelay" />
+            </label>
+            <div class="result">
+              <div class="k">IL,pk(sc)</div>
+              <div class="v"><span id="ilPkSc"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>9.2.1.2.5 Output Capacitors</h2>
+
+      <div class="step">
+        <div class="stepHeader">
+          <h3>Step 1 — Estimate minimum Cout for load-off overshoot (Eq. 36)</h3>
+          <p class="subtle">Energy-based estimate using L and a permitted ΔV.</p>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(36)</div>
+            \[
+              C_{OUT} = \frac{L\,I_{OUT}^2}{(V_{OUT}+\Delta V)^2 - V_{OUT}^2}
+            \]
+          </div>
+
+          <div class="inputs">
+            <label class="field">
+              <span>ΔV overshoot [V]</span>
+              <input type="number" step="0.001" id="voutOvershoot" />
+            </label>
+            <div class="result">
+              <div class="k">Cout (min)</div>
+              <div class="v"><span id="coutMin"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepHeader">
+          <h3>Step 2 — Estimate output ripple (Eq. 37) and capacitor RMS current (Eq. 38)</h3>
+          <p class="subtle">Uses effective (derated) capacitance and ESR assumption.</p>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(37)</div>
+            \[
+              \Delta V_{OUT,pp} \approx \sqrt{\left(\frac{\Delta I_L}{8F_{SW}C_{OUT,eff}}\right)^2 + (\Delta I_L\,R_{ESR})^2}
+            \]
+          </div>
+          <div class="inputs">
+            <label class="field">
+              <span>Cout,eff [F]</span>
+              <input type="number" step="1e-6" id="coutEff" />
+            </label>
+            <label class="field">
+              <span>RESR [Ω]</span>
+              <input type="number" step="1e-6" id="routEsr" />
+            </label>
+            <div class="result">
+              <div class="k">ΔVout,pp</div>
+              <div class="v"><span id="voutRipple"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(38)</div>
+            \[
+              I_{CO,rms} = \frac{\Delta I_L}{\sqrt{12}}
+            \]
+          </div>
+          <div class="inputs">
+            <div class="result">
+              <div class="k">Ico,rms</div>
+              <div class="v"><span id="icoRms"></span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>9.2.1.2.6 Input Capacitors</h2>
+
+      <div class="step">
+        <div class="stepHeader">
+          <h3>Step 2 — Input capacitor RMS current (Eq. 39)</h3>
+          <p class="subtle">Often checked at worst-case duty-cycle near 50%.</p>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(39)</div>
+            \[
+              I_{CIN,rms} = I_{OUT}\sqrt{D(1-D)}
+            \]
+          </div>
+          <div class="inputs">
+            <label class="field">
+              <span>D (duty)</span>
+              <input type="number" step="0.01" id="duty" />
+            </label>
+            <div class="result">
+              <div class="k">Icin,rms</div>
+              <div class="v"><span id="icinRms"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepHeader">
+          <h3>Step 3 — Estimate required Cin to meet ripple spec (Eq. 40)</h3>
+          <p class="subtle">Combines capacitive ripple estimate with ESR ripple (RSS).</p>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(40)</div>
+            \[
+              \Delta V_{IN,cap} \approx \frac{I_{OUT}D(1-D)}{F_{SW}C_{IN}},\quad
+              \Delta V_{IN,ESR} \approx I_{CIN,rms}R_{ESR}
+            \]
+            \[
+              \Delta V_{IN,pp} \approx \sqrt{\Delta V_{IN,cap}^2 + \Delta V_{IN,ESR}^2}
+            \]
+          </div>
+          <div class="inputs">
+            <label class="field">
+              <span>ΔVIN,pp spec [V]</span>
+              <input type="number" step="0.001" id="vinRippleSpec" />
+            </label>
+            <label class="field">
+              <span>RESR [Ω]</span>
+              <input type="number" step="1e-6" id="rinEsr" />
+            </label>
+            <div class="result">
+              <div class="k">Cin required</div>
+              <div class="v"><span id="cinReq"></span></div>
+            </div>
+            <div class="note" id="cinNote"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>9.2.1.2.7 Frequency Set Resistor</h2>
+
+      <div class="step">
+        <div class="stepHeader">
+          <h3>Compute RT for a target switching frequency (Eq. 41)</h3>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(41)</div>
+            \[
+              F_{SW}(kHz)=\frac{10^6}{45\,R_T(k\Omega)+53}
+            \]
+          </div>
+          <div class="inputs">
+            <div class="result">
+              <div class="k">RT</div>
+              <div class="v"><span id="rt"></span> Ω</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>9.2.1.2.8 Feedback Resistors</h2>
+
+      <div class="step">
+        <div class="stepHeader">
+          <h3>Compute divider (Eq. 42)</h3>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(42)</div>
+            \[
+              V_{OUT} = V_{REF}\left(1+\frac{R_{TOP}}{R_{BOT}}\right)
+            \]
+          </div>
+          <div class="inputs">
+            <label class="field">
+              <span>VREF [V]</span>
+              <input type="number" step="0.001" id="vref" />
+            </label>
+            <label class="field">
+              <span>RBOT [Ω]</span>
+              <input type="number" step="1" id="rfbBot" />
+            </label>
+            <div class="result">
+              <div class="k">RTOP</div>
+              <div class="v"><span id="rfbTop"></span> Ω</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>9.2.1.2.9 Compensation Components</h2>
+
+      <div class="step">
+        <div class="stepHeader">
+          <h3>Compute RCOMP (Eq. 43)</h3>
+          <p class="subtle">Uses a simplified form consistent with the Word export equation.</p>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(43)</div>
+            \[
+              R_{COMP} = \frac{V_{OUT}R_SG_m}{2\pi f_C C_{OUT,eff}V_{REF}}
+            \]
+          </div>
+          <div class="inputs">
+            <label class="field">
+              <span>fC [Hz]</span>
+              <input type="number" step="100" id="fc" />
+            </label>
+            <label class="field">
+              <span>Gm [S]</span>
+              <input type="number" step="1e-6" id="gm" />
+            </label>
+            <div class="result">
+              <div class="k">RCOMP</div>
+              <div class="v"><span id="rcomp"></span> Ω</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepHeader">
+          <h3>Compute CCOMP (Eq. 44)</h3>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(44)</div>
+            \[
+              C_{COMP} = \frac{10}{2\pi f_C R_{COMP}}
+            \]
+          </div>
+          <div class="inputs">
+            <div class="result">
+              <div class="k">CCOMP</div>
+              <div class="v"><span id="ccomp"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="stepHeader">
+          <h3>Compute CHF (Eq. 45)</h3>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(45)</div>
+            \[
+              C_{HF} = \frac{1}{2\pi f_{ESR}R_{COMP}}-C_{BW}
+            \]
+          </div>
+          <div class="inputs">
+            <label class="field">
+              <span>fESR [Hz]</span>
+              <input type="number" step="1000" id="fesr" />
+            </label>
+            <label class="field">
+              <span>Cbw [F]</span>
+              <input type="number" step="1e-13" id="cbw" />
+            </label>
+            <div class="result">
+              <div class="k">CHF</div>
+              <div class="v"><span id="chf"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <footer class="footer">
+      <p class="subtle">
+        Notes: This is a learning aid. Validate against the datasheet and your full design requirements.
+      </p>
+    </footer>
+  </main>
+</body>
+</html>

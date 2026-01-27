@@ -1,0 +1,4 @@
+# Optional dependencies for Excel COM automation (recalc + SaveAs)
+# Requires Windows + Microsoft Excel installed.
+xlwings
+pywin32==306

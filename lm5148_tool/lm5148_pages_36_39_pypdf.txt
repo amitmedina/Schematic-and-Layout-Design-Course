@@ -1,0 +1,224 @@
+
+
+===== PAGE 36 =====
+
+9.2.1.2 Detailed Design Procedure
+9.2.1.2.1 Custom Design with WEBENCH® Tools
+Click here to create a custom design using the LM5148 device with the WEBENCH Power Designer.
+1. Start by entering the input voltage (VIN), output voltage (VOUT), and output current (IOUT) requirements.
+2. Optimize the design for key parameters such as efficiency, footprint, and cost using the optimizer dial.
+3. Compare the generated design with other possible solutions from Texas Instruments.
+The WEBENCH Power Designer provides a customized schematic along with a list of materials with real-time 
+pricing and component availability.
+In most cases, these actions are available:
+• Run electrical simulations to see important waveforms and circuit performance
+• Run thermal simulations to understand board thermal performance
+• Export customized schematic and layout into popular CAD formats
+• Print PDF reports for the design, and share the design with colleagues
+Get more information about WEBENCH tools at www.ti.com/WEBENCH.
+9.2.1.2.2 Custom Design with Excel Quickstart Tool
+Select components based on the regulator specifications using the LM5148 Quickstart Calculator available for 
+download from the LM5148 product folder.
+9.2.1.2.3 Buck Inductor
+1. Use Equation 31 to calculate the required buck inductance based on a 30% ΔILO inductor ripple current at 
+nominal input voltages.
+ 
+§ · § · ¨ ¸        ¨ ¸ ¨ ¸ '   © ¹ © ¹ 
+OUT OUT
+O
+LO SW IN nom
+V V 5 V 5 VL 1 1 0.58 +I F V 2.4 A 2.1 MHz 12 V
+(31)
+2. Select a standard inductor value of 0.56 µH or use a 0.68 µH to account for effective inductance derating 
+over the current range of molded inductors. Use Equation 32 to calculate the peak inductor currents at 
+maximum steady-state input voltage. Subharmonic oscillation occurs with a duty cycle greater than 50% 
+for peak current-mode control. For design simplification, the LM5148 has an internal slope compensation 
+ramp proportional to the switching frequency that is added to the current sense signal to damp any tendency 
+toward subharmonic oscillation.
+§ · § · '           ¨ ¸ ¨ ¸ ¨ ¸    © ¹ © ¹ 
+LO OUT OUT
+LO(PK) OUT OUT
+O SW IN(max)
+I V V 5 V 5 VI I I 1 8 A 1 9.53 A2 2 L F V 0.56 +  0+]  9
+(32)
+3. Based on Equation 9, use Equation 33 to cross-check the inductance to set a slope compensation close to 
+the ideal one times the inductor current downslope.
+  :      
+OUT S
+O(sc)
+SW
+V R 5 V 5mL 0.5 +24 F 24 2.1 MHz
+(33)
+9.2.1.2.4 Current-Sense Resistance
+1. Calculate the current-sense resistance based on a maximum peak current capability of at least 25% higher 
+than the peak inductor current at full load to provide sufficient margin during start-up and load-on transients. 
+Calculate the current sense resistances using Equation 34.
+   :   
+CS-TH
+S
+LO(PK)
+V 60mVR 5.04m1.25 I 1.25 9.53 A
+(34)
+LM5148
+SNVSC01 – FEBRUARY 2023
+ www.ti.com
+36 Submit Document Feedback Copyright © 2023 Texas Instruments Incorporated
+Product Folder Links: LM5148
+
+===== PAGE 37 =====
+
+where
+• VCS-TH is the 60-mV current limit threshold.
+2. Select a standard resistance value of 5 mΩ for the shunt. An 0508 footprint component with wide aspect 
+ratio termination design provides 1-W power rating, low parasitic series inductance, and compact PCB 
+layout. Carefully adhere to the layout guidelines in Section 9.4.1 to make sure that noise and DC errors do 
+not corrupt the differential current-sense voltages measured at the ISNS+ and VOUT pins.
+3. Place the shunt resistor close to the inductor.
+4. Use Kelvin-sense connections, and route the sense lines differentially from the shunt to the LM5148.
+5. The CS-to-output propagation delay (related to the current limit comparator, internal logic, and power 
+MOSFET gate drivers) causes the peak current to increase above the calculated current limit threshold. 
+For a total propagation delay tDELAY-ISNS+ of 40 ns, use Equation 35 to calculate the worst-case peak inductor 
+current with the output shorted.
+      :
+IN(max) DELAY-ISNS+CS-TH
+LO-PK(SC)
+S O 
+V t V 60mV 18 V 45nsI 13.5 AR L 5m 0.56 +
+(35)
+6. Based on this result, select an inductor with saturation current greater than the result of Equation 35 across 
+the full operating temperature range.
+9.2.1.2.5 Output Capacitors
+1. Use Equation 36 to estimate the output capacitance required to manage the output voltage overshoot during 
+a load-off transient (from full load to no load) assuming a load transient deviation specification of 1.5% (75 
+mV for a 5-V output).
+ 
+ 
+   
+'t   
+'   
+22
+O OUT
+OUT 2 2 2 2
+OUT OVERSHOOT OUT
+0.56+  $L I C 47.4)
+V V V 5 V 75mV 5 V
+(36)
+2. Noting the voltage coefficient of ceramic capacitors where the effective capacitance decreases significantly 
+with applied voltage, select four 47-µF, 10-V, X7R, 1210 ceramic output capacitors. Generally, when 
+sufficient capacitance is used to satisfy the load-off transient response requirement, the voltage undershoot 
+during a no-load to full-load transient is also satisfactory.
+3. Use Equation 37 to estimate the peak-peak output voltage ripple at nominal input voltage.
+   
+§ · § · ''   '   :  ¨ ¸ ¨ ¸     © ¹ © ¹ 
+2 2
+2 2LO
+OUT ESR LO
+SW OUT
+I 2.54AV R I 1m 2.54 A 4.3mV8 F C 8 2.1MHz 44 )
+(37)
+where
+• RESR is the effective equivalent series resistance (ESR) of the output capacitors.
+• 44 µF is the total effective (derated) ceramic output capacitance at 5 V.
+4. Use Equation 38 to calculate the output capacitor RMS ripple current using and verify that the ripple current 
+is within the capacitor ripple current rating.
+'   LO
+CO(RMS)
+I 2.54 AI 0.73 A
+12 12
+(38)
+9.2.1.2.6 Input Capacitors
+A power supply input typically has a relatively high source impedance at the switching frequency. Good-quality 
+input capacitors are necessary to limit the input ripple voltage. As mentioned earlier, dual-channel interleaved 
+operation significantly reduces the input ripple amplitude. In general, the ripple current splits between the input 
+capacitors based on the relative impedance of the capacitors at the switching frequency.
+1. Select the input capacitors with sufficient voltage and RMS ripple current ratings.
+www.ti.com
+LM5148
+SNVSC01 – FEBRUARY 2023
+Copyright © 2023 Texas Instruments Incorporated Submit Document Feedback 37
+Product Folder Links: LM5148
+
+===== PAGE 38 =====
+
+2. Use Equation 39 to calculate the input capacitor RMS ripple current assuming a worst-case duty-cycle 
+operating point of 50%.
+            CIN(RMS) OUTI I D 1 D 8A 0.5 1 0.5 4 A
+(39)
+3. Use Equation 40 to find the required input capacitance.
+ 
+ 
+ 
+ 
+     t    '     :
+OUT
+IN
+SW IN ESR OUT
+D 1 D I 0.5 1 0.5 8 AC 9.2 )F V R I 2.1MHz 120mV 2m 8 A
+(40)
+where
+• ΔVIN is the input peak-to-peak ripple voltage specification.
+• RESR is the input capacitor ESR.
+4. Recognizing the voltage coefficient of ceramic capacitors, select two 10-µF, 50-V, X7R, 1210 ceramic input 
+capacitors. Place these capacitors adjacent to the power MOSFETs. See Section 9.4.1.1 for more details.
+5. Use four 10-nF, 50-V, X7R, 0603 ceramic capacitors near the high-side MOSFET to supply the high di/dt 
+current during MOSFET switching transitions. Such capacitors offer high self-resonant frequency (SRF) 
+and low effective impedance above 100 MHz. The result is lower power loop parasitic inductance, thus 
+minimizing switch-node voltage overshoot and ringing for lower conducted and radiated EMI signature. Refer 
+to Section 9.4.1 for more details.
+9.2.1.2.7 Frequency Set Resistor
+Calculate the RT resistance for a switching frequency of 2.1 MHz using Equation 41. Choose a standard E96 
+value of 9.53 kΩ.
+ 
+:    :
+6 6
+SW
+T
+10 1053 53F (kHz) 2100kHzR (k ) 9.4k45 45
+(41)
+9.2.1.2.8 Feedback Resistors
+If an output voltage setpoint other than 3.3 V or 5 V is required (or to measure a bode plot when using either of 
+the fixed output voltage options), determine the feedback resistances using Equation 42.
+(42)
+9.2.1.2.9 Compensation Components
+Choose compensation components for a stable control loop using the procedure outlined as follows:
+1. Based on a specified loop gain crossover frequency, fC, of 60 kHz, use Equation 43 to calculate RCOMP, 
+assuming an effective output capacitance of 100 µF. Choose a standard value for RCOMP of 10 kΩ.
+S S  :           :OUT S CS
+COMP C OUT
+REF m
+V R G 5 V 5m 10R 2 f C 2 60kHz 100 ) NV g 0.8 V 1200 6
+(43)
+2. To provide adequate phase boost at crossover while also allowing a fast settling time during a load or line 
+transient, select CCOMP to place a zero at the higher of (1) one tenth of the crossover frequency, or (2) the 
+load pole. Choose a standard value for CCOMP of 2.7 nF.
+S S        :COMP
+C COMP
+10 10C 2.65  nF2 f R 2 60kHz 10 k
+(44)
+LM5148
+SNVSC01 – FEBRUARY 2023
+ www.ti.com
+38 Submit Document Feedback Copyright © 2023 Texas Instruments Incorporated
+Product Folder Links: LM5148
+
+===== PAGE 39 =====
+
+Such a low capacitance value also helps to avoid output voltage overshoot when recovering from dropout 
+(when the input voltage is less than the output voltage setpoint and VCOMP is railed high).
+3. Calculate CHF to create a pole at the ESR zero and to attenuate high-frequency noise at COMP. CBW is the 
+bandwidth-limiting capacitance of the error amplifier. CHF can not be significant enough to be necessary in 
+some designs, like this one. CHF can be unpopulated, or used with a small 22 pF for more noise filtering.
+S S          :HF BW
+ESR COMP
+1 1 C C 31 pF 0.8  pF2 f R 2 500kHz 10 k
+(45)
+Note
+Set a fast loop with high R COMP and low CCOMP values to improve the response when recovering from 
+operation in dropout.
+For technical solutions, industry trends, and insights for designing and managing power supplies, please refer to 
+TI's technical articles.
+www.ti.com
+LM5148
+SNVSC01 – FEBRUARY 2023
+Copyright © 2023 Texas Instruments Incorporated Submit Document Feedback 39
+Product Folder Links: LM5148

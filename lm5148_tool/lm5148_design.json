@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "tool": "lm5148_webapp",
+    "version": 1,
+    "exportedAt": "2026-01-26T00:00:00.000Z"
+  },
+  "inputs": {
+    "vinMin": 10,
+    "vinNom": 12,
+    "vinMax": 18,
+    "vout": 5,
+    "iout": 8,
+    "fsw": 2100000,
+    "rippleFrac": 0.3,
+    "lUsed": 5.6e-7,
+    "rsForEq33": 0.005,
+    "vcsTh": 0.06,
+    "ilPkMargin": 1.25,
+    "tDelay": 4.5e-8,
+    "voutOvershoot": 0.075,
+    "coutEff": 4.4e-5,
+    "routEsr": 0.001,
+    "duty": 0.5,
+    "vinRippleSpec": 0.12,
+    "rinEsr": 0.002,
+    "vref": 0.8,
+    "rfbBot": 10000,
+    "fc": 60000,
+    "gm": 0.0012,
+    "fesr": 500000,
+    "cbw": 8e-13
+  },
+  "results": {}
+}
