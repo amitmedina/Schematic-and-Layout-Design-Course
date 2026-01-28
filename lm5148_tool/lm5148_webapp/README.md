@@ -1,5 +1,17 @@
 # LM5148 Web Calculator (pages 36–39)
 
+## Open from anywhere (GitHub Pages)
+
+If you enabled **GitHub Pages** for this repo, the calculator is available at:
+
+- `https://<your-user>.github.io/<repo-name>/lm5148_tool/lm5148_webapp/`
+
+For example, if your GitHub user is `amitmedina` and the repo name is `Schematic-and-Layout-Design-Course`, the direct URL is:
+
+- `https://amitmedina.github.io/Schematic-and-Layout-Design-Course/lm5148_tool/lm5148_webapp/`
+
+To enable it: GitHub → **Settings → Pages** → **Build and deployment** → Deploy from a branch → Branch: `main` → Folder: `/ (root)`.
+
 ## Open on your phone (same Wi‑Fi)
 
 1. From the repo root, start a local server:
@@ -80,6 +92,6 @@ If you want to open the calculator from your phone (or anywhere), publish it via
 	- **Folder**: `/ (root)`
 4. After it deploys, open the site:
 	- Main landing page: `https://<your-user>.github.io/<repo-name>/`
-	- Direct app URL: `https://<your-user>.github.io/<repo-name>/lm5148_webapp/`
+	- Direct app URL: `https://<your-user>.github.io/<repo-name>/lm5148_tool/lm5148_webapp/`
 
 Note: VS Code’s *internal preview/webview* often blocks external scripts (like MathJax from a CDN), so the page can look “broken” there. Use a real browser (Chrome/Edge) or serve it over `http://` (Live Server / `python -m http.server`) and it will render correctly.
