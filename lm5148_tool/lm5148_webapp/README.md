@@ -4,6 +4,8 @@
 
 If you enabled **GitHub Pages** for this repo, the calculator is available at:
 
+https://amitmedina.github.io/Schematic-and-Layout-Design-Course/lm5148_tool/lm5148_webapp/
+ 
 - `https://<your-user>.github.io/<repo-name>/lm5148_tool/lm5148_webapp/`
 
 For example, if your GitHub user is `amitmedina` and the repo name is `Schematic-and-Layout-Design-Course`, the direct URL is:
