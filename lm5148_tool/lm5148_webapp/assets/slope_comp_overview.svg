@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+  <defs>
+    <style>
+      .bg{fill:#0b1220}
+      .box{fill:#121c2f;stroke:#60a5fa;stroke-width:2;rx:14;}
+      .txt{fill:#e5e7eb;font-family:Segoe UI, Arial, sans-serif;font-size:18px;}
+      .muted{fill:#94a3b8;font-family:Segoe UI, Arial, sans-serif;font-size:15px;}
+      .wire{stroke:#e5e7eb;stroke-width:3;fill:none;}
+      .accent{fill:#22c55e;font-family:Segoe UI, Arial, sans-serif;font-size:16px;}
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#e5e7eb"/>
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="900" height="520"/>
+
+  <text class="txt" x="30" y="42">Slope compensation (illustrative overview)</text>
+  <text class="muted" x="30" y="68">Internal ramp is summed with current-sense to improve stability at high duty cycles.</text>
+
+  <rect class="box" x="40" y="120" width="260" height="110"/>
+  <text class="txt" x="70" y="160">Current-sense</text>
+  <text class="muted" x="70" y="186">(through RS / amplifier)</text>
+
+  <rect class="box" x="40" y="280" width="260" height="110"/>
+  <text class="txt" x="70" y="320">Slope ramp</text>
+  <text class="muted" x="70" y="346">(internal compensation)</text>
+
+  <path class="wire" d="M300 175 L430 175" marker-end="url(#arrow)"/>
+  <path class="wire" d="M300 335 L430 335" marker-end="url(#arrow)"/>
+
+  <rect class="box" x="430" y="210" width="160" height="120"/>
+  <text class="txt" x="468" y="265">Σ</text>
+  <text class="muted" x="470" y="296">sum</text>
+
+  <path class="wire" d="M590 270 L720 270" marker-end="url(#arrow)"/>
+
+  <rect class="box" x="720" y="210" width="140" height="120"/>
+  <text class="txt" x="745" y="255">Comparator</text>
+  <text class="muted" x="745" y="284">PWM decision</text>
+
+  <text class="accent" x="40" y="460">Rule of thumb:</text>
+  <text class="muted" x="40" y="486">If your inductor / current-sense slope is too steep and ramp is insufficient,</text>
+  <text class="muted" x="40" y="506">you may see jitter or subharmonic oscillation above ~50% duty cycle.</text>
+</svg>

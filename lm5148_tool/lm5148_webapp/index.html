@@ -35,6 +35,8 @@
         <button id="btnReset" class="btn">Reset to defaults</button>
         <button id="btnCopy" class="btn btnSecondary">Copy results as JSON</button>
         <button id="btnDownload" class="btn btnSecondary">Download JSON</button>
+        <a href="../../HW Training - Schematic to Layout Design Course/lm5148.pdf" download class="btn btnDownload" title="Download LM5148 Datasheet">📄 Datasheet (PDF)</a>
+        <a href="../../training/LM5148_LM25148_quickstart_calculator_A4.xlsm" download class="btn btnDownload" title="Download Quickstart Calculator">📊 Excel Calculator</a>
       </div>
       <div id="status" class="status" aria-live="polite"></div>
     </div>
@@ -116,6 +118,566 @@
     </section>
 
     <section class="card">
+      <h2>Interactive Schematic (live values)</h2>
+      <p class="subtle">Click a component to jump to the related input. Values update automatically from the calculator.</p>
+
+      <div class="schematicWrap" aria-label="LM5148 buck schematic">
+        <svg id="schematicSvg" class="schematicSvg" viewBox="0 0 1100 620" role="img" aria-labelledby="schTitle schDesc">
+          <title id="schTitle">LM5148 buck stage schematic</title>
+          <desc id="schDesc">A buck schematic matching the quickstart reference with labeled components whose values update from the inputs and results.</desc>
+
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <!-- MAIN POWER RAILS -->
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <!-- VIN rail (top) -->
+          <line x1="30" y1="50" x2="1050" y2="50" class="schWire" />
+          <!-- GND rail (bottom) -->
+          <line x1="30" y1="570" x2="1050" y2="570" class="schWire" />
+
+          <!-- VIN label -->
+          <rect x="30" y="30" width="16" height="16" class="schNode" fill="none" stroke="red" stroke-width="2"/>
+          <text x="54" y="32" class="schText" style="fill:#ff4444;font-weight:700;font-size:14px;">VIN</text>
+          <text id="sch_vin" x="54" y="68" class="schText" style="fill:#ff4444;font-weight:700;font-size:13px;">—</text>
+
+          <!-- VOUT label (right side) -->
+          <rect x="1034" y="200" width="16" height="16" class="schNode" fill="none" stroke="red" stroke-width="2"/>
+          <text x="1056" y="200" class="schText" style="fill:#ff4444;font-weight:700;font-size:14px;">VOUT</text>
+          <text id="sch_vout" x="1056" y="220" class="schText" style="fill:#ff4444;font-weight:700;font-size:13px;">—</text>
+          <text id="sch_iout" x="1056" y="240" class="schText" style="fill:#ff4444;font-weight:700;font-size:13px;">—</text>
+
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <!-- LEFT SIDE: RUV1/RUV2 (UVLO divider), VDDA arrow, RFB, Comp network -->
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+
+          <!-- UVLO divider (RUV1/RUV2) from VIN to EN to GND -->
+          <g class="schHotspot" data-target="uvloR1">
+            <title>UVLO divider — click to edit RUV1</title>
+            <!-- Vertical wire from VIN down -->
+            <line x1="80" y1="50" x2="80" y2="90" class="schWire" />
+            <!-- RUV1 resistor -->
+            <rect x="68" y="90" width="24" height="50" class="schRes" />
+            <text x="44" y="100" class="schText schHint">RUV1</text>
+            <text id="sch_ruv1" x="44" y="130" class="schText schValue">—</text>
+            <!-- Wire to EN node -->
+            <line x1="80" y1="140" x2="80" y2="170" class="schWire" />
+            <circle cx="80" cy="170" r="4" class="schNode" />
+            <!-- Wire to EN pin -->
+            <line x1="80" y1="170" x2="280" y2="170" class="schWire" />
+            <!-- RUV2 resistor -->
+            <rect x="68" y="180" width="24" height="50" class="schRes" />
+            <text x="44" y="195" class="schText schHint">RUV2</text>
+            <text id="sch_ruv2" x="44" y="225" class="schText schValue">—</text>
+            <!-- Wire to GND -->
+            <line x1="80" y1="230" x2="80" y2="570" class="schWire" />
+          </g>
+
+          <!-- VDDA arrow (left side, tied to RTOP top node) -->
+          <line x1="130" y1="280" x2="160" y2="280" class="schWire" />
+          <polygon points="160,280 150,275 150,285" class="schNode" />
+          <line x1="160" y1="280" x2="160" y2="300" class="schWire" />
+          <text x="130" y="270" class="schText schHint">VDDA</text>
+
+          <!-- RFB1 (feedback top resistor, RTOP - calculated from Eq.42) -->
+          <g class="schHotspot" data-target="eq42_sub">
+            <title>RFB1 / RTOP (calculated from Eq.42) — click to jump to Eq.42</title>
+            <!-- Vertical wire down from VDDA level -->
+            <line x1="160" y1="300" x2="160" y2="330" class="schWire" />
+            <!-- RTOP resistor (RFB) -->
+            <rect x="148" y="330" width="24" height="50" class="schRes" />
+            <text x="118" y="340" class="schText schHint">RTOP</text>
+            <text id="sch_rtop" x="96" y="362" class="schText schValue" style="fill:#22c55e;">—</text>
+            <text x="96" y="378" class="schText schHint" style="font-size:9px;fill:#60a5fa;">(Eq.42)</text>
+            <!-- Wire to FB node -->
+            <line x1="160" y1="380" x2="160" y2="400" class="schWire" />
+            <circle cx="160" cy="400" r="4" class="schNode" />
+            <!-- Wire to FB pin -->
+            <line x1="160" y1="400" x2="280" y2="400" class="schWire" />
+          </g>
+
+          <!-- Compensation network from EXTCOMP (Eq.43-45) -->
+          <g class="schHotspot" data-target="fc">
+            <title>Compensation network (Eq.43-45) — click to edit fC</title>
+            <!-- EXTCOMP node -->
+            <circle cx="200" cy="460" r="4" class="schNode" />
+            <!-- RCOMP vertical resistor going down -->
+            <line x1="110" y1="460" x2="200" y2="460" class="schWire" />
+            <rect x="98" y="470" width="24" height="50" class="schRes" />
+            <line x1="110" y1="460" x2="110" y2="470" class="schWire" />
+            <text x="70" y="476" class="schText schHint">RCOMP</text>
+            <text id="sch_rcomp" x="62" y="496" class="schText schValue" style="fill:#22c55e;font-size:11px;">—</text>
+            <!-- CCOMP capacitor to GND -->
+            <line x1="110" y1="520" x2="110" y2="540" class="schWire" />
+            <line x1="96" y1="540" x2="124" y2="540" class="schWire" />
+            <line x1="96" y1="552" x2="124" y2="552" class="schWire" />
+            <line x1="110" y1="552" x2="110" y2="570" class="schWire" />
+            <text x="70" y="544" class="schText schHint">CCOMP</text>
+            <text id="sch_ccomp" x="62" y="564" class="schText schValue" style="fill:#22c55e;font-size:11px;">—</text>
+            <!-- CHF small cap (parallel, shown offset) -->
+            <line x1="40" y1="520" x2="40" y2="540" class="schWire" />
+            <line x1="26" y1="540" x2="54" y2="540" class="schWire" />
+            <line x1="26" y1="548" x2="54" y2="548" class="schWire" />
+            <line x1="40" y1="548" x2="40" y2="570" class="schWire" />
+            <line x1="40" y1="520" x2="110" y2="520" class="schWire" />
+            <text x="10" y="530" class="schText schHint">CHF</text>
+            <text id="sch_chf" x="10" y="552" class="schText schValue" style="fill:#22c55e;font-size:11px;">—</text>
+            <!-- Eq reference -->
+            <text x="10" y="590" class="schText schHint" style="font-size:9px;fill:#60a5fa;">(Eq.43-45)</text>
+          </g>
+
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <!-- CVIN (small bypass cap near VIN pin) -->
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <g class="schHotspot" data-target="cvinSmall">
+            <title>CVIN small bypass — click to edit</title>
+            <line x1="200" y1="50" x2="200" y2="80" class="schWire" />
+            <line x1="186" y1="80" x2="214" y2="80" class="schWire" />
+            <line x1="186" y1="92" x2="214" y2="92" class="schWire" />
+            <line x1="200" y1="92" x2="200" y2="120" class="schWire" />
+            <text x="220" y="72" class="schText schLabel">CVIN</text>
+            <text id="sch_cvin" x="220" y="92" class="schText schValue">—</text>
+          </g>
+
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <!-- LM5148 IC BLOCK (positioned like the reference) -->
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <rect x="280" y="100" width="350" height="440" rx="0" class="schChip" style="stroke-width:3" />
+          <text x="380" y="330" class="schText schChipName" style="font-size:26px;">LM5148</text>
+
+          <!-- TOP EDGE PINS: VIN, VCC -->
+          <line x1="340" y1="100" x2="340" y2="50" class="schWire" />
+          <text x="340" y="118" class="schText schHint" text-anchor="middle">VIN</text>
+
+          <line x1="560" y1="100" x2="560" y2="50" class="schWire" />
+          <text x="560" y="118" class="schText schHint" text-anchor="middle">VCC</text>
+
+          <!-- LEFT EDGE PINS (top to bottom): EN, PG, PFM/SYNC, FB, EXTCOMP -->
+          <line x1="280" y1="170" x2="240" y2="170" class="schWire" />
+          <text x="290" y="174" class="schText schHint">EN</text>
+
+          <line x1="280" y1="220" x2="240" y2="220" class="schWire" />
+          <text x="290" y="224" class="schText schHint">PG</text>
+          <!-- PG arrow out -->
+          <polygon points="240,220 250,215 250,225" class="schNode" />
+
+          <line x1="280" y1="280" x2="240" y2="280" class="schWire" />
+          <text x="290" y="284" class="schText schHint">PFM/SYNC</text>
+          <!-- Arrow in -->
+          <polygon points="260,280 250,275 250,285" class="schNode" />
+
+          <line x1="280" y1="400" x2="240" y2="400" class="schWire" />
+          <text x="290" y="404" class="schText schHint">FB</text>
+
+          <line x1="280" y1="460" x2="200" y2="460" class="schWire" />
+          <text x="290" y="464" class="schText schHint">EXTCOMP</text>
+
+          <!-- RIGHT EDGE PINS (top to bottom): CBOOT, HO, SW, LO, PGND, ISNS+, VOUT, VCCX -->
+          <line x1="630" y1="140" x2="680" y2="140" class="schWire" />
+          <text x="616" y="144" class="schText schHint" text-anchor="end">CBOOT</text>
+
+          <line x1="630" y1="190" x2="680" y2="190" class="schWire" />
+          <text x="616" y="194" class="schText schHint" text-anchor="end">HO</text>
+
+          <line x1="630" y1="250" x2="680" y2="250" class="schWire" />
+          <text x="616" y="254" class="schText schHint" text-anchor="end">SW</text>
+
+          <line x1="630" y1="310" x2="680" y2="310" class="schWire" />
+          <text x="616" y="314" class="schText schHint" text-anchor="end">LO</text>
+
+          <line x1="630" y1="360" x2="680" y2="360" class="schWire" />
+          <text x="616" y="364" class="schText schHint" text-anchor="end">PGND</text>
+
+          <line x1="630" y1="410" x2="680" y2="410" class="schWire" />
+          <text x="616" y="414" class="schText schHint" text-anchor="end">ISNS+</text>
+
+          <line x1="630" y1="450" x2="680" y2="450" class="schWire" />
+          <text x="616" y="454" class="schText schHint" text-anchor="end">VOUT</text>
+
+          <line x1="630" y1="490" x2="680" y2="490" class="schWire" />
+          <text x="616" y="494" class="schText schHint" text-anchor="end">VCCX</text>
+          <!-- VCCX note -->
+          <text x="700" y="494" class="schText schHint" style="font-size:10px;">Connect to 5V rail</text>
+          <text x="700" y="508" class="schText schHint" style="font-size:10px;">(or tie to GND)</text>
+
+          <!-- BOTTOM EDGE PINS: RT, CNFG, AGND, VDDA -->
+          <line x1="340" y1="540" x2="340" y2="570" class="schWire" />
+          <text x="340" y="532" class="schText schHint" text-anchor="middle">RT</text>
+
+          <line x1="420" y1="540" x2="420" y2="570" class="schWire" />
+          <text x="420" y="532" class="schText schHint" text-anchor="middle">CNFG</text>
+
+          <line x1="500" y1="540" x2="500" y2="570" class="schWire" />
+          <text x="500" y="532" class="schText schHint" text-anchor="middle">AGND</text>
+
+          <line x1="580" y1="540" x2="580" y2="570" class="schWire" />
+          <text x="580" y="532" class="schText schHint" text-anchor="middle">VDDA</text>
+
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <!-- BOTTOM COMPONENTS: RT, RCNFG, CVDDA -->
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <!-- RT resistor to GND (calculated from Eq.41) -->
+          <g class="schHotspot" data-target="eq41_sub">
+            <title>RT (calculated from Eq.41) — click to jump to Eq.41</title>
+            <rect x="328" y="575" width="24" height="40" class="schRes" />
+            <line x1="340" y1="615" x2="340" y2="625" class="schWire" />
+            <!-- Ground symbol -->
+            <line x1="328" y1="625" x2="352" y2="625" class="schWire" />
+            <line x1="332" y1="631" x2="348" y2="631" class="schWire" />
+            <line x1="336" y1="637" x2="344" y2="637" class="schWire" />
+            <text x="294" y="585" class="schText schLabel">RT</text>
+            <text id="sch_rt" x="282" y="605" class="schText schValue" style="fill:#22c55e;">—</text>
+            <text x="282" y="622" class="schText schHint" style="font-size:9px;fill:#60a5fa;">(Eq.41)</text>
+          </g>
+
+          <!-- RCNFG resistor to GND -->
+          <g class="schHotspot" data-target="rcnfg">
+            <title>RCNFG — click to edit</title>
+            <rect x="408" y="575" width="24" height="40" class="schRes" />
+            <line x1="420" y1="615" x2="420" y2="625" class="schWire" />
+            <!-- Ground symbol -->
+            <line x1="408" y1="625" x2="432" y2="625" class="schWire" />
+            <line x1="412" y1="631" x2="428" y2="631" class="schWire" />
+            <line x1="416" y1="637" x2="424" y2="637" class="schWire" />
+            <text x="374" y="588" class="schText schHint">RCNFG</text>
+            <text id="sch_rcnfg" x="362" y="608" class="schText schValue">—</text>
+          </g>
+
+          <!-- CVDDA capacitor to GND -->
+          <g class="schHotspot" data-target="cvdda">
+            <title>CVDDA — click to edit</title>
+            <line x1="580" y1="570" x2="580" y2="590" class="schWire" />
+            <line x1="566" y1="590" x2="594" y2="590" class="schWire" />
+            <line x1="566" y1="600" x2="594" y2="600" class="schWire" />
+            <line x1="580" y1="600" x2="580" y2="625" class="schWire" />
+            <!-- Ground symbol -->
+            <line x1="568" y1="625" x2="592" y2="625" class="schWire" />
+            <line x1="572" y1="631" x2="588" y2="631" class="schWire" />
+            <line x1="576" y1="637" x2="584" y2="637" class="schWire" />
+            <text x="602" y="588" class="schText schLabel">CVDDA</text>
+            <text id="sch_cvdda" x="602" y="608" class="schText schValue">—</text>
+          </g>
+
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <!-- TOP-RIGHT AREA: CVCC, CBOOT, CIN (bulk at VIN) -->
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <!-- CVCC capacitor from VCC to GND -->
+          <g class="schHotspot" data-target="cvcc">
+            <title>CVCC — click to edit</title>
+            <line x1="560" y1="50" x2="560" y2="80" class="schWire" />
+            <line x1="546" y1="80" x2="574" y2="80" class="schWire" />
+            <line x1="546" y1="92" x2="574" y2="92" class="schWire" />
+            <line x1="560" y1="92" x2="560" y2="570" class="schWire" />
+            <text x="580" y="72" class="schText schLabel">CVCC</text>
+            <text id="sch_cvcc" x="580" y="92" class="schText schValue">—</text>
+          </g>
+
+          <!-- CBOOT bootstrap cap (between CBOOT pin and SW node) -->
+          <g class="schHotspot" data-target="cboot">
+            <title>CBOOT — click to edit</title>
+            <!-- Connect CBOOT pin to cap -->
+            <line x1="680" y1="140" x2="700" y2="140" class="schWire" />
+            <!-- Vertical cap from CBOOT pin down to SW net -->
+            <line x1="700" y1="140" x2="700" y2="160" class="schWire" />
+            <line x1="686" y1="160" x2="714" y2="160" class="schWire" />
+            <line x1="686" y1="172" x2="714" y2="172" class="schWire" />
+            <line x1="700" y1="172" x2="700" y2="250" class="schWire" />
+            <text x="720" y="150" class="schText schLabel">CBOOT</text>
+            <text id="sch_cboot" x="720" y="170" class="schText schValue">—</text>
+          </g>
+
+          <!-- CIN bulk input capacitor (calculated from Eq.40) -->
+          <g class="schHotspot" data-target="vinRippleSpec">
+            <title>CIN (calculated from Eq.40) — click to edit ripple spec</title>
+            <line x1="950" y1="50" x2="950" y2="80" class="schWire" />
+            <line x1="936" y1="80" x2="964" y2="80" class="schWire" />
+            <line x1="936" y1="92" x2="964" y2="92" class="schWire" />
+            <line x1="950" y1="92" x2="950" y2="570" class="schWire" />
+            <text x="970" y="68" class="schText schLabel">CIN</text>
+            <text id="sch_cin" x="970" y="88" class="schText schValue" style="fill:#22c55e;">—</text>
+            <text x="970" y="106" class="schText schHint" style="font-size:9px;fill:#60a5fa;">(Eq.40)</text>
+          </g>
+
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <!-- POWER STAGE: Q1 (HO), Q2 (LO), L, RS -->
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <!-- Q1 high-side FET (HO drives gate) -->
+          <g>
+            <!-- Drain to VIN rail -->
+            <line x1="780" y1="50" x2="780" y2="120" class="schWire" />
+            <!-- FET symbol (simplified) -->
+            <rect x="765" y="120" width="30" height="40" class="schRes" style="fill:none;stroke-dasharray:none;" />
+            <text x="800" y="145" class="schText schHint">Q1</text>
+            <!-- Gate from HO -->
+            <line x1="680" y1="190" x2="760" y2="190" class="schWire" />
+            <line x1="760" y1="190" x2="760" y2="140" class="schWire" />
+            <!-- Source to SW node -->
+            <line x1="780" y1="160" x2="780" y2="250" class="schWire" />
+          </g>
+
+          <!-- SW pin to SW node wire -->
+          <line x1="680" y1="250" x2="780" y2="250" class="schWire" />
+
+          <!-- SW node -->
+          <circle cx="780" cy="250" r="6" class="schNode" />
+
+          <!-- Q2 low-side FET (LO drives gate) -->
+          <g>
+            <!-- Drain from SW -->
+            <line x1="780" y1="250" x2="780" y2="290" class="schWire" />
+            <!-- FET symbol (simplified) -->
+            <rect x="765" y="290" width="30" height="40" class="schRes" style="fill:none;stroke-dasharray:none;" />
+            <text x="800" y="315" class="schText schHint">Q2</text>
+            <!-- Gate from LO -->
+            <line x1="680" y1="310" x2="760" y2="310" class="schWire" />
+            <!-- Source to GND -->
+            <line x1="780" y1="330" x2="780" y2="570" class="schWire" />
+          </g>
+
+          <!-- Inductor from SW to RS (calculated from Eq.31) -->
+          <g class="schHotspot" data-target="lUsed">
+            <title>L (calculated from Eq.31) — click to edit</title>
+            <line x1="780" y1="250" x2="830" y2="250" class="schWire" />
+            <path d="M830,250 c12,-18 24,18 36,0 c12,-18 24,18 36,0 c12,-18 24,18 36,0" class="schWire" />
+            <line x1="938" y1="250" x2="960" y2="250" class="schWire" />
+            <text x="865" y="228" class="schText schLabel">LO</text>
+            <text id="sch_l" x="860" y="248" class="schText schValue" style="fill:#22c55e;">—</text>
+            <text x="860" y="266" class="schText schHint" style="font-size:9px;fill:#60a5fa;">(Eq.31)</text>
+          </g>
+
+          <!-- RS sense resistor (calculated from Eq.34) -->
+          <g class="schHotspot" data-target="vcsTh">
+            <title>RS (calculated from Eq.34) — click to edit current limit</title>
+            <rect x="960" y="238" width="40" height="24" class="schRes" />
+            <text x="966" y="230" class="schText schLabel">RS</text>
+            <text id="sch_rs" x="960" y="280" class="schText schValue" style="fill:#22c55e;">—</text>
+            <text x="960" y="296" class="schText schHint" style="font-size:9px;fill:#60a5fa;">(Eq.34)</text>
+            <!-- Wire to VOUT node -->
+            <line x1="1000" y1="250" x2="1040" y2="250" class="schWire" />
+          </g>
+
+          <!-- VOUT node -->
+          <circle cx="1040" cy="250" r="6" class="schNode" />
+          <!-- Vertical wire up to VOUT rail -->
+          <line x1="1040" y1="250" x2="1040" y2="50" class="schWire" />
+
+          <!-- ISNS+ connection (from after RS to ISNS+ pin) -->
+          <line x1="1000" y1="250" x2="1000" y2="410" class="schWire" />
+          <line x1="680" y1="410" x2="1000" y2="410" class="schWire" />
+
+          <!-- VOUT pin connection -->
+          <line x1="680" y1="450" x2="1040" y2="450" class="schWire" />
+          <line x1="1040" y1="450" x2="1040" y2="250" class="schWire" />
+
+          <!-- PGND to GND -->
+          <line x1="680" y1="360" x2="720" y2="360" class="schWire" />
+          <line x1="720" y1="360" x2="720" y2="570" class="schWire" />
+
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <!-- COUT (output capacitor - calculated from Eq.36) -->
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <g class="schHotspot" data-target="voutOvershoot">
+            <title>COUT (calculated from Eq.36) — click to edit overshoot spec</title>
+            <line x1="1040" y1="300" x2="1040" y2="330" class="schWire" />
+            <line x1="1026" y1="330" x2="1054" y2="330" class="schWire" />
+            <line x1="1026" y1="342" x2="1054" y2="342" class="schWire" />
+            <line x1="1040" y1="342" x2="1040" y2="570" class="schWire" />
+            <text x="1056" y="316" class="schText schLabel">COUT</text>
+            <text id="sch_cout" x="1056" y="338" class="schText schValue" style="fill:#22c55e;">—</text>
+            <text x="1056" y="356" class="schText schHint" style="font-size:9px;fill:#60a5fa;">(Eq.36)</text>
+            <text id="sch_cout_eff" x="1056" y="374" class="schText schHint" style="font-size:9px;">eff: —</text>
+          </g>
+
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <!-- FB connection (from VOUT node to FB via RFB/RBOT divider) -->
+          <!-- ═══════════════════════════════════════════════════════════════ -->
+          <!-- Connection from VOUT to RFB top (routed below IC to keep the drawing clean) -->
+          <line x1="160" y1="300" x2="160" y2="548" class="schWire" />
+          <line x1="160" y1="548" x2="1040" y2="548" class="schWire" />
+          <line x1="1040" y1="548" x2="1040" y2="250" class="schWire" />
+
+          <!-- RBOT from FB node to GND -->
+          <g class="schHotspot" data-target="rfbBot">
+            <title>RFB2 / RBOT (manual) — click to edit</title>
+            <line x1="160" y1="400" x2="160" y2="430" class="schWire" />
+            <rect x="148" y="430" width="24" height="50" class="schRes" />
+            <text id="sch_rbot" x="100" y="460" class="schText schValue">RFB2: —</text>
+            <line x1="160" y1="480" x2="160" y2="570" class="schWire" />
+          </g>
+
+        </svg>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Schematic Components (Manual Inputs)</h2>
+      <p class="subtle">These are the "extra" support components around the IC, plus schematic-only manual values (for example RFB2 / RBOT). Calculated values appear in <span style="color:#22c55e;">green</span> with equation references in <span style="color:#60a5fa;">blue</span>.</p>
+
+      <div class="grid">
+        <label class="field">
+          <span>RUV1 (VIN→EN) [Ω]</span>
+          <input type="number" step="1" id="uvloR1" />
+          <details class="help">
+            <summary>What is this?</summary>
+            <div>Top resistor of the UVLO/enable divider (VIN to EN). Used to set the EN threshold in the quickstart-style schematic.</div>
+          </details>
+        </label>
+        <label class="field">
+          <span>RUV2 (EN→GND) [Ω]</span>
+          <input type="number" step="1" id="uvloR2" />
+          <details class="help">
+            <summary>What is this?</summary>
+            <div>Bottom resistor of the UVLO/enable divider (EN to GND).</div>
+          </details>
+        </label>
+
+        <label class="field" id="field_rfb2">
+          <span>RFB2 / RBOT (FB→GND) [Ω]</span>
+          <input type="number" step="1" id="rfbBot" />
+          <details class="help">
+            <summary>What is this?</summary>
+            <div>
+              Bottom resistor of the feedback divider (from FB node to GND). This is a manual schematic value
+              (pick an E96/E24 part). Eq.42 uses this value to compute RFB1 / RTOP.
+            </div>
+          </details>
+        </label>
+        <label class="field">
+          <span>CVIN (small) [F]</span>
+          <input type="number" step="1e-12" id="cvinSmall" />
+          <details class="help">
+            <summary>What is this?</summary>
+            <div>Small, high-frequency bypass capacitor close to VIN pin (typically tens of nF).</div>
+          </details>
+        </label>
+
+        <label class="field">
+          <span>CVCC [F]</span>
+          <input type="number" step="1e-9" id="cvcc" />
+          <details class="help">
+            <summary>What is this?</summary>
+            <div>VCC decoupling capacitor near the IC (often a few µF).</div>
+          </details>
+        </label>
+        <label class="field">
+          <span>CBOOT [F]</span>
+          <input type="number" step="1e-9" id="cboot" />
+          <details class="help">
+            <summary>What is this?</summary>
+            <div>Bootstrap capacitor between CBOOT and SW (often ~0.1 µF).</div>
+          </details>
+        </label>
+        <label class="field">
+          <span>RCNFG [Ω]</span>
+          <input type="number" step="1" id="rcnfg" />
+          <details class="help">
+            <summary>What is this?</summary>
+            <div>Configuration resistor on the CNFG pin as used in the quickstart schematic.</div>
+          </details>
+        </label>
+        <label class="field">
+          <span>CVDDA (decouple) [F]</span>
+          <input type="number" step="1e-9" id="cvdda" />
+          <details class="help">
+            <summary>What is this?</summary>
+            <div>VDDA decoupling capacitor shown in many reference schematics (often 0.1 µF).</div>
+          </details>
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Programmable UVLO (EN Divider) — RUV1 / RUV2</h2>
+      <p class="subtle">
+        The LM5148 is enabled with a voltage greater than 1.0 V. However, many applications benefit from using a resistor divider
+        RUV1 and RUV2, as shown in Figure 8-2, to establish a precision UVLO level. TI does not recommend leaving the EN pin floating.
+        Use Equation 2 and Equation 3 to calculate the UVLO resistors given the required input turn-on and turn-off voltages.
+      </p>
+
+      <div class="step">
+        <div class="stepHeader">
+          <h3>Compute UVLO resistors (Eq. 2–3)</h3>
+          <p class="subtle">Enter VIN(on), VIN(off), and the EN hysteresis current. Then copy/lock the result into the schematic values.</p>
+        </div>
+
+        <div class="eqRow">
+          <div class="equation">
+            <div class="eqTag">(2)</div>
+            \[
+              R_{UV1} = \frac{V_{IN(on)} - V_{IN(off)}}{I_{HYS}}
+            \]
+            <div class="substitute"><code id="uvlo_eq2_sub"></code></div>
+
+            <div class="eqTag" style="margin-top:10px;">(3)</div>
+            \[
+              R_{UV2} = R_{UV1}\cdot\frac{V_{EN}}{V_{IN(on)}-V_{EN}}
+            \]
+            <div class="substitute"><code id="uvlo_eq3_sub"></code></div>
+          </div>
+
+          <div class="inputs">
+            <label class="field">
+              <span>VIN(on) [V]</span>
+              <input type="number" step="0.01" id="uvloVinOn" />
+            </label>
+            <label class="field">
+              <span>VIN(off) [V]</span>
+              <input type="number" step="0.01" id="uvloVinOff" />
+            </label>
+            <label class="field">
+              <span>IHYS [A]</span>
+              <input type="number" step="1e-7" id="uvloIhys" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  EN hysteresis current source (often shown as ~10 µA in the simplified diagram). This current creates hysteresis between
+                  VIN(on) and VIN(off). Use the datasheet value for your configuration.
+                </div>
+              </details>
+            </label>
+            <label class="field">
+              <span>VEN threshold [V]</span>
+              <input type="number" step="0.01" id="uvloVen" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>LM5148 enable threshold. Many designs use ~1.0 V as a starting value.</div>
+              </details>
+            </label>
+
+            <div class="result">
+              <div class="k">RUV1 (calc)</div>
+              <div class="v"><span id="uvloCalcR1"></span></div>
+            </div>
+            <div class="result">
+              <div class="k">RUV2 (calc)</div>
+              <div class="v"><span id="uvloCalcR2"></span></div>
+            </div>
+
+            <label class="field">
+              <span>Lock schematic RUV1/RUV2 to calc</span>
+              <input type="checkbox" id="uvloLock" />
+              <details class="help">
+                <summary>What happens if I pick different resistor values?</summary>
+                <div>
+                  - If you choose <b>higher</b> resistances than calculated, the divider current decreases (less loss) but the EN node can become more noise-sensitive.
+                  - If you choose <b>lower</b> resistances, the divider current increases (more robust to noise) but wastes more power from VIN.
+                  - Picking the nearest E96/E24 values is normal; verify VIN(on)/VIN(off) thresholds after rounding.
+                </div>
+              </details>
+            </label>
+
+            <button type="button" class="btn btnSecondary" id="btnApplyUvlo">Copy calc → RUV1/RUV2</button>
+          </div>
+        </div>
+
+        <div class="note">
+          <figure class="fig figSmall">
+            <img id="figUvlo" src="assets/uvlo_divider_overview.svg" data-prefer-src="assets/ti_uvlo_divider.png" alt="UVLO enable divider (RUV1/RUV2)" />
+            <figcaption class="subtle">UVLO divider figure. If you add assets/ti_uvlo_divider.png (from your datasheet copy), the page will auto-use it.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
       <h2>9.2.1.2.3 Buck Inductor</h2>
 
       <div class="step">
@@ -130,6 +692,8 @@
             \[
               L = \frac{V_{OUT}(V_{IN,nom}-V_{OUT})}{V_{IN,nom}\,F_{SW}\,\Delta I_L}
             \]
+            <div class="substitute"><code id="eq31_sub"></code></div>
+            <div class="substitute"><code id="deltaIl_sub"></code></div>
           </div>
 
           <div class="inputs">
@@ -154,6 +718,13 @@
               <div class="k">L required</div>
               <div class="v"><span id="lReq"></span></div>
             </div>
+            <details class="help">
+              <summary>What if I choose L higher / lower?</summary>
+              <div>
+                - <b>Higher L</b> than calculated → lower ripple current, lower peak current, usually lower output ripple; but slower transient response and typically larger/higher DCR inductors.
+                - <b>Lower L</b> than calculated → higher ripple and peak current; can increase output ripple and stress, and may hit current limit or inductor saturation under worst case.
+              </div>
+            </details>
           </div>
         </div>
 
@@ -173,6 +744,7 @@
               \Delta I_L = \frac{V_{OUT}(V_{IN,max}-V_{OUT})}{V_{IN,max}\,L\,F_{SW}},\quad
               I_{L,pk} = I_{OUT} + \frac{\Delta I_L}{2}
             \]
+            <div class="substitute"><code id="eq32_sub"></code></div>
           </div>
 
           <div class="inputs">
@@ -185,6 +757,17 @@
                   The actual inductance value you plan to use (a real part value).
                   The tool uses this to recompute ripple and peak current at VIN(max) and to size other parts
                   (sense resistor, short-circuit peak current, output cap energy step, etc.).
+                </div>
+              </details>
+            </label>
+            <label class="field">
+              <span>Use L required for L used</span>
+              <input type="checkbox" id="lockLUsedToLreq" />
+              <details class="help">
+                <summary>What is this?</summary>
+                <div>
+                  When enabled, <b>L used</b> is automatically set to the <b>L required</b> value computed by Eq. 31.
+                  Disable this if you want to enter a standard inductance value and re-check ripple/peak currents.
                 </div>
               </details>
             </label>
@@ -212,6 +795,31 @@
             \[
               L_{O(sc)} = \frac{V_{OUT}R_S}{(24\,\mathrm{mV})\,F_{SW}}
             \]
+            <div class="substitute"><code id="eq33_sub" tabindex="-1"></code></div>
+            <details class="help">
+              <summary>What is “cross-check slope compensation” and what does LO(sc) mean?</summary>
+              <div>
+                LM5148 uses peak current-mode control: it compares a rising current-sense signal (through RS) against a
+                control threshold. At duty cycles above ~50%, peak current-mode converters can show subharmonic oscillation
+                unless sufficient <b>slope compensation</b> is present. LM5148 includes an internal slope-compensation ramp.
+              </div>
+              <div style="margin-top:8px;">
+                Eq.33 provides a quick sanity check by calculating an equivalent inductance <b>LO(sc)</b> based on VOUT, RS,
+                and FSW. The idea is to compare this computed value against the inductor inductance you will have in the
+                worst case (often the minimum inductance at high current/temperature, or a short-circuit effective inductance).
+              </div>
+              <div style="margin-top:8px;">
+                How to interpret the result:
+                - If your <b>L used</b> (or worst-case minimum L) is <b>greater than LO(sc)</b>: the built‑in slope compensation is
+                  generally sufficient for stable peak current-mode behavior.
+                - If your <b>L used</b> is <b>lower than LO(sc)</b>: the sensed current slope is steeper; the loop can become prone to
+                  subharmonic oscillation/jitter at high duty cycles, and current-limit behavior can degrade.
+              </div>
+              <div style="margin-top:8px;">
+                If you are “too low” (L &lt; LO(sc)), typical fixes include choosing a larger inductor, increasing FSW (reduces LO(sc)),
+                or revisiting the current-sense strategy per the datasheet guidance.
+              </div>
+            </details>
           </div>
 
           <div class="inputs">
@@ -236,6 +844,25 @@
               <div class="k">LO(sc)</div>
               <div class="v"><span id="rosc"></span></div>
             </div>
+            <div class="result">
+              <div class="k">Compare to L used</div>
+              <div class="v">See L used above (Eq.31/32)</div>
+            </div>
+            <div class="note" style="margin-top:10px;">
+              <div class="subtle" style="margin:0;">
+                Figures below illustrate where slope compensation acts in the control loop and an example of current-sense implementation.
+              </div>
+              <div class="figGrid">
+                <figure class="fig">
+                  <img id="figSlopeComp" src="assets/slope_comp_overview.svg" data-prefer-src="assets/ti_slope_comp_ramp.png" alt="Slope compensation overview (illustrative)" />
+                  <figcaption class="subtle">Slope compensation ramp concept (illustrative). If you add assets/ti_slope_comp_ramp.png, the page will auto-use it.</figcaption>
+                </figure>
+                <figure class="fig">
+                  <img id="figDcrSense" src="assets/dcr_sense_overview.svg" data-prefer-src="assets/ti_dcr_current_sense.png" alt="Inductor DCR current sensing overview (illustrative)" />
+                  <figcaption class="subtle">DCR current-sense concept (illustrative). If you add assets/ti_dcr_current_sense.png, the page will auto-use it.</figcaption>
+                </figure>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -256,6 +883,7 @@
             \[
               R_S = \frac{V_{CS,TH}}{m\,I_{L,pk}}\quad (m\approx1.25)
             \]
+            <div class="substitute"><code id="eq34_sub"></code></div>
           </div>
 
           <div class="inputs">
@@ -297,6 +925,13 @@
               <div class="k">RS</div>
               <div class="v"><span id="rsense"></span></div>
             </div>
+            <details class="help">
+              <summary>What if RS is higher / lower?</summary>
+              <div>
+                - <b>Higher RS</b> → the controller reaches VCS-TH at a lower current → <b>lower current limit</b> (more protection), but higher conduction loss and lower efficiency.
+                - <b>Lower RS</b> → <b>higher current limit</b> (more available current), but more stress on FETs/inductor and higher risk of overcurrent before limiting.
+              </div>
+            </details>
           </div>
         </div>
       </div>
@@ -313,6 +948,7 @@
             \[
               I_{L,pk(sc)} = \frac{V_{CS,TH}}{R_S} + \frac{V_{IN,max}\,t_{delay}}{L}
             \]
+            <div class="substitute"><code id="eq35_sub"></code></div>
           </div>
 
           <div class="inputs">
@@ -362,6 +998,7 @@
             \[
               C_{OUT} = \frac{L\,I_{OUT}^2}{(V_{OUT}+\Delta V)^2 - V_{OUT}^2}
             \]
+            <div class="substitute"><code id="eq36_sub"></code></div>
           </div>
 
           <div class="inputs">
@@ -386,6 +1023,13 @@
               <div class="k">Cout (min)</div>
               <div class="v"><span id="coutMin"></span></div>
             </div>
+            <details class="help">
+              <summary>What if Cout is higher / lower?</summary>
+              <div>
+                - <b>Higher Cout</b> than the minimum → less overshoot on load release and often lower ripple; but bigger size/cost and more inrush.
+                - <b>Lower Cout</b> than the minimum → more overshoot and higher risk of violating the ΔV spec (and potentially load abs-max limits).
+              </div>
+            </details>
           </div>
         </div>
       </div>
@@ -402,6 +1046,7 @@
             \[
               \Delta V_{OUT,pp} \approx \sqrt{\left(\frac{\Delta I_L}{8F_{SW}C_{OUT,eff}}\right)^2 + (\Delta I_L\,R_{ESR})^2}
             \]
+            <div class="substitute"><code id="eq37_sub"></code></div>
           </div>
           <div class="inputs">
             <label class="field">
@@ -450,6 +1095,7 @@
             \[
               I_{CO,rms} = \frac{\Delta I_L}{\sqrt{12}}
             \]
+            <div class="substitute"><code id="eq38_sub"></code></div>
           </div>
           <div class="inputs">
             <div class="result">
@@ -477,6 +1123,7 @@
             \[
               I_{CIN,rms} = I_{OUT}\sqrt{D(1-D)}
             \]
+            <div class="substitute"><code id="eq39_sub"></code></div>
           </div>
           <div class="inputs">
             <label class="field">
@@ -512,12 +1159,13 @@
           <div class="equation">
             <div class="eqTag">(40)</div>
             \[
-              \Delta V_{IN,cap} \approx \frac{I_{OUT}D(1-D)}{F_{SW}C_{IN}},\quad
+              I_{CIN,rms} = I_{OUT}\sqrt{D(1-D)},\quad
               \Delta V_{IN,ESR} \approx I_{CIN,rms}R_{ESR}
             \]
             \[
-              \Delta V_{IN,pp} \approx \sqrt{\Delta V_{IN,cap}^2 + \Delta V_{IN,ESR}^2}
+              C_{IN} \approx \frac{I_{OUT}D(1-D)}{F_{SW}\,\sqrt{\Delta V_{IN,pp}^2 - \Delta V_{IN,ESR}^2}}
             \]
+            <div class="substitute"><code id="eq40_sub"></code></div>
           </div>
           <div class="inputs">
             <label class="field">
@@ -552,6 +1200,14 @@
               <div class="v"><span id="cinReq"></span></div>
             </div>
             <div class="note" id="cinNote"></div>
+            <details class="help">
+              <summary>What if CIN is higher / lower?</summary>
+              <div>
+                - <b>Higher CIN</b> → lower VIN ripple and typically better EMI margin (up to ESR/ESL limits).
+                - <b>Lower CIN</b> → higher VIN ripple; can violate your ripple spec and stress upstream supply.
+                - If ESR dominates (ΔVIN,ESR too big), increasing capacitance alone won’t fix it—use lower-ESR parts or add parallels.
+              </div>
+            </details>
           </div>
         </div>
       </div>
@@ -569,14 +1225,22 @@
           <div class="equation">
             <div class="eqTag">(41)</div>
             \[
-              F_{SW}(kHz)=\frac{10^6}{45\,R_T(k\Omega)+53}
+              R_T(k\Omega)=\frac{\frac{10^6}{F_{SW}(kHz)}-53}{45}
             \]
+            <div class="substitute"><code id="eq41_sub"></code></div>
           </div>
           <div class="inputs">
             <div class="result">
               <div class="k">RT</div>
               <div class="v"><span id="rt"></span> Ω</div>
             </div>
+            <details class="help">
+              <summary>What if RT (and FSW) are higher / lower?</summary>
+              <div>
+                - <b>Higher FSW</b> (smaller RT) → allows smaller L/C for same ripple, but increases switching loss and EMI risk.
+                - <b>Lower FSW</b> (larger RT) → improves efficiency/EMI margin but needs larger L/C for the same ripple and can slow transient response.
+              </div>
+            </details>
           </div>
         </div>
       </div>
@@ -587,15 +1251,16 @@
 
       <div class="step">
         <div class="stepHeader">
-          <h3>Compute divider (Eq. 42)</h3>
+          <h3>Compute RFB1 (RTOP) from RFB2 (RBOT) (Eq. 42)</h3>
         </div>
 
         <div class="eqRow">
           <div class="equation">
             <div class="eqTag">(42)</div>
             \[
-              V_{OUT} = V_{REF}\left(1+\frac{R_{TOP}}{R_{BOT}}\right)
+              R_{FB1} = R_{FB2}\left(\frac{V_{OUT}}{V_{REF}}-1\right)
             \]
+            <div class="substitute"><code id="eq42_sub" tabindex="-1"></code></div>
           </div>
           <div class="inputs">
             <label class="field">
@@ -609,22 +1274,22 @@
                 </div>
               </details>
             </label>
-            <label class="field">
-              <span>RBOT [Ω]</span>
-              <input type="number" step="1" id="rfbBot" />
-              <details class="help">
-                <summary>What is this?</summary>
-                <div>
-                  Bottom resistor of the feedback divider (from FB node to GND).
-                  You typically choose RBOT first (common values 10 kΩ–100 kΩ), then compute RTOP.
-                  Higher resistance reduces divider current (slightly better efficiency) but can be more noise-sensitive.
-                </div>
-              </details>
-            </label>
             <div class="result">
-              <div class="k">RTOP</div>
-              <div class="v"><span id="rfbTop"></span> Ω</div>
+              <div class="k">RFB2 (manual)</div>
+              <div class="v"><span id="rfb2Val"></span> <a href="#field_rfb2" style="color:var(--accent);text-decoration:none;">edit</a></div>
             </div>
+            <div class="result">
+              <div class="k">RFB1 / RTOP</div>
+              <div class="v"><span id="rfb1"></span></div>
+            </div>
+            <details class="help">
+              <summary>What if my resistor values differ?</summary>
+              <div>
+                - If <b>RFB1 is higher</b> than the computed value (with the same RFB2), the divider ratio increases → FB sees a smaller fraction of VOUT → the loop will regulate to a <b>higher VOUT</b>.
+                - If <b>RFB1 is lower</b>, the divider ratio decreases → the loop regulates to a <b>lower VOUT</b>.
+                - If you keep RFB1 fixed (E96 choice), you can solve Eq.42 “backwards” to pick an RFB2 that lands on your target VOUT.
+              </div>
+            </details>
           </div>
         </div>
       </div>
@@ -632,6 +1297,23 @@
 
     <section class="card">
       <h2>9.2.1.2.9 Compensation Components</h2>
+
+      <details class="help">
+        <summary>Why is external compensation needed? What is crossover frequency?</summary>
+        <div>
+          The power stage (FETs + inductor + output capacitors) has poles/zeros that affect stability. The compensation network
+          on EXTCOMP shapes the loop so the converter is <b>stable</b> and has good transient response.
+        </div>
+        <div style="margin-top:8px;">
+          <b>Crossover frequency</b> $f_C$ is the frequency where the loop gain crosses 0 dB (gain = 1). Typical design targets keep
+          $f_C$ well below the switching frequency (often $f_C \approx F_{SW}/10$ or lower) to preserve phase margin.
+        </div>
+        <div style="margin-top:8px;">
+          Practical meaning:
+          - Too <b>high</b> $f_C$ → faster transient response but can reduce phase margin (ringing/instability).
+          - Too <b>low</b> $f_C$ → very stable but sluggish load-step response.
+        </div>
+      </details>
 
       <div class="step">
         <div class="stepHeader">
@@ -645,6 +1327,7 @@
             \[
               R_{COMP} = \frac{V_{OUT}R_SG_m}{2\pi f_C C_{OUT,eff}V_{REF}}
             \]
+            <div class="substitute"><code id="eq43_sub"></code></div>
           </div>
           <div class="inputs">
             <label class="field">
@@ -675,6 +1358,13 @@
               <div class="k">RCOMP</div>
               <div class="v"><span id="rcomp"></span> Ω</div>
             </div>
+            <details class="help">
+              <summary>What if my actual parts differ from the calculated values?</summary>
+              <div>
+                - RCOMP/CCOMP/CHF are usually rounded to E-series values; re-check phase margin if you move far from the calculated point.
+                - In general, raising $f_C$ tends to reduce required RCOMP/CCOMP values (and speeds response), while lowering $f_C$ increases them (and slows response).
+              </div>
+            </details>
           </div>
         </div>
       </div>
@@ -690,6 +1380,7 @@
             \[
               C_{COMP} = \frac{10}{2\pi f_C R_{COMP}}
             \]
+            <div class="substitute"><code id="eq44_sub"></code></div>
           </div>
           <div class="inputs">
             <div class="result">
@@ -711,6 +1402,7 @@
             \[
               C_{HF} = \frac{1}{2\pi f_{ESR}R_{COMP}}-C_{BW}
             \]
+            <div class="substitute"><code id="eq45_sub"></code></div>
           </div>
           <div class="inputs">
             <label class="field">

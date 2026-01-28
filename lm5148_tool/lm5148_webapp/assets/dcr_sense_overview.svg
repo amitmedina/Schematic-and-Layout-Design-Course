@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+  <defs>
+    <style>
+      .bg{fill:#0b1220}
+      .box{fill:#121c2f;stroke:#60a5fa;stroke-width:2;rx:14;}
+      .txt{fill:#e5e7eb;font-family:Segoe UI, Arial, sans-serif;font-size:18px;}
+      .muted{fill:#94a3b8;font-family:Segoe UI, Arial, sans-serif;font-size:15px;}
+      .wire{stroke:#e5e7eb;stroke-width:3;fill:none;}
+      .g{stroke:#22c55e;stroke-width:3;fill:none;}
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#e5e7eb"/>
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="900" height="520"/>
+
+  <text class="txt" x="30" y="42">Inductor DCR current sensing (illustrative overview)</text>
+  <text class="muted" x="30" y="68">Uses the inductor’s DCR with an RC network to emulate a current-sense voltage.</text>
+
+  <!-- Power stage line -->
+  <path class="wire" d="M60 160 H330"/>
+  <path class="g" d="M130 160 c20,-30 40,30 60,0 c20,-30 40,30 60,0"/>
+  <text class="muted" x="150" y="125">L (with DCR)</text>
+
+  <path class="wire" d="M330 160 H430" marker-end="url(#arrow)"/>
+  <text class="muted" x="350" y="145">to VOUT</text>
+
+  <!-- Sense RC -->
+  <rect class="box" x="80" y="240" width="360" height="210"/>
+  <text class="txt" x="110" y="280">RC network</text>
+  <text class="muted" x="110" y="306">(Rcs, Ccs) shapes a sense signal</text>
+  <text class="muted" x="110" y="330">to represent inductor current.</text>
+
+  <path class="wire" d="M200 160 V240"/>
+  <path class="wire" d="M200 240 H250"/>
+  <path class="wire" d="M250 240 V360"/>
+  <path class="wire" d="M250 360 H200"/>
+  <path class="wire" d="M200 360 V450"/>
+
+  <text class="muted" x="270" y="255">Rcs</text>
+  <text class="muted" x="210" y="388">Ccs</text>
+
+  <!-- Amplifier -->
+  <rect class="box" x="520" y="240" width="320" height="210"/>
+  <text class="txt" x="550" y="280">Current-sense amplifier</text>
+  <text class="muted" x="550" y="306">CS gain (example: 10)</text>
+  <text class="muted" x="550" y="332">feeds the controller’s</text>
+  <text class="muted" x="550" y="356">current-limit loop.</text>
+
+  <path class="wire" d="M440 330 H520" marker-end="url(#arrow)"/>
+  <text class="muted" x="430" y="320">sense</text>
+
+  <text class="muted" x="30" y="490">Note: This is an illustrative diagram (not an exact reproduction of the datasheet figure).</text>
+</svg>

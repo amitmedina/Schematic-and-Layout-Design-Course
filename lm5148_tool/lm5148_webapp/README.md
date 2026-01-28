@@ -1,5 +1,16 @@
 # LM5148 Web Calculator (pages 36–39)
 
+## Open on your phone (same Wi‑Fi)
+
+1. From the repo root, start a local server:
+	- `py -m http.server 8000 --bind 0.0.0.0`
+2. On your PC, find your IPv4 address (Wi‑Fi adapter):
+	- `ipconfig`
+3. On your phone (connected to the same Wi‑Fi), open:
+	- `http://<YOUR_PC_IP>:8000/lm5148_tool/lm5148_webapp/`
+
+If it doesn’t load, allow Python through Windows Firewall (Private network) or try a different port.
+
 Static HTML app that follows the LM5148 datasheet design flow (pages 36–39) and computes equations (31–45) with inputs placed next to each equation.
 
 ## Run
